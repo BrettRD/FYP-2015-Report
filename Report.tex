@@ -1,0 +1,191 @@
+\documentclass[a4paper, 11pt, titlepage]{article}
+\usepackage{a4wide}
+\usepackage{amsmath}
+
+\usepackage[pdftex]{graphicx}
+\usepackage{pdfpages}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{cite}
+\usepackage{import}
+\usepackage[title,titletoc,toc]{appendix}
+
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+%Colours!
+\usepackage[table]{xcolor}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{mynavyblue}{HTML}{1E5A9C}
+
+%PDF hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+     colorlinks   = true,
+     citecolor    = black,
+     linkcolor    = black,
+     urlcolor   = mynavyblue,
+     bookmarksopen  = false,
+     pdfpagemode  = UseNone,
+     pdftitle   = {Hexacopter Project 2015 - Ardupilot proposal},
+     pdfauthor    = {},
+     pdfsubject = {Hexacopter FYP 2015}
+}
+
+
+
+\begin{document}
+
+
+  \input{./title.tex}
+
+  %\maketitle
+  \begin{abstract}
+Abstract
+
+  \end{abstract}
+
+  \tableofcontents
+
+  \section{Introduction}
+	Background, Aims
+
+\section{History / prior works / relevance}
+	Chase-cam (Lily cam, ...Dog)
+	Cinematography	feature films, Red Bull, 
+	Remote Inspection, approached by mining industry technology start-ups
+
+\section{Motivation}
+	I really really want one.
+	computer vision assisted control routine
+	Obstacle avoidance
+	Introduction to SLAM systems
+
+\section{Project log}
+
+	Platform
+		Description
+			Frame, Flight controller, processor, gimbal
+		Platform Weaknesses
+			(fitness for purpose etc)
+			NAZA not hackable, deliberately obfuscated comms
+			RC switch did not permit altitude control
+			No telemetry
+			Waypoints handled on the embedded system despite GPS loiter behaviour of the flight computer.
+
+
+	Team Achievements
+		Conversion to Ardupilot 3.3
+		Mavlink, waypoints, altidude control, failsafes, telemetry
+		Full, and revocable hand-over to external autopilot.
+		Linearised SI units input and output from flight controller
+		Reduction of mass, tidy wiring harness
+		
+		Web UI and HUD
+		Waypoint modifier using no-fly zones (not integrated with ardupilot exclusion zones)
+		Glyph detection
+		Capture and tagging of images for proprietary offline 3D reconstruction.
+
+\section{Object tracker Theory}
+	Position estimation
+	Desired relative pose
+
+	Observations and uncertainties
+		Structure from image
+			Computational load
+			Live capture
+		Uncertainties:
+			A good uncertainty model encodes what is known and what is unknown.
+			Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
+			In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
+				Monocular Camera uncertainty model
+				Lidar Lite Uncertainty model
+				GPS uncertainty model
+				Time evolution uncertainty models
+				Base Utilities
+					Vector sum
+					combination
+					point sample
+				Kalman style filtering
+			Relative uncertainties
+				Networks of relative measurements
+				Graph traversal
+					Nodes:
+						Objects' time history (including self)
+							Survey Markers
+						Assumptions (GPS objects?)
+					Links
+						Relative Observations
+						Motion Estimates
+							IMU data
+							Kalman style interpolation
+	Current implementation
+		Strengths
+			Encodes appropriate information in a covariance matrix form
+			Cleanly integrates multiple observations into an object model
+		Weaknesses
+			Camera model does not account for uncertainty from angle of pixels, gimbal pose, IMU sample time (angular velocity), GPS drift
+			GPS drift is deliberately ignored in favour of applying a generous velocity uncertainty to the objects.
+			Cannot describe complex distributions (unbounded polynomial order)
+				arbitrary geometry Uncertainty Images from SoggyDog
+	Future Work
+			Velocity interpolation not implemented.
+			Graph traversal (SLAM) not implemented.
+			Describe hyperbolic distribution and flaws
+			Describe Laser beam necking case
+
+
+\section{Test Results}
+
+	Software tests
+		Gimbal pose, IMU data, GPS location etc
+		Camera uncertainty models combined with assumptions
+		Pretty pictures
+			Multiple observations with time-evolution
+
+	Live tests
+		*Able to physically follow one object, while tracking multiple others.
+		Acceleration limits, velocity limits, time-cutoffs.
+		pitch and roll stability
+		Basic colour matching limitations
+
+\section{Future Work}
+	Expand uncertainty analysis
+	SLAM, end to end solution
+	SIFT algorithm
+	Optical Flow
+	Recommendations:
+		ROS, ROS, ROS.
+
+\section{Conclusions}
+	We have greatly improved the capabilities of the UWA autonomous hexacopter platform, and have brought the code-base up to a level where it is feasible to implement a SLAM process.
+
+
+
+
+
+%Referencing
+%---------------------------------------------------------
+%\pagebreak
+\renewcommand{\refname}{References}
+\addcontentsline{toc}{section}{References}
+\bibliography{references/refs}
+\bibliographystyle{ieeetr}
+%\addbibresource{references/refs.bib}
+%\printbibliography
+
+%---------------------------------------------------------
+
+\begin{appendices}
+  %\addcontentsline{toc}{section}{Appendices}
+  \section{ArduPilot (Pixhawk) Proposal} \label{sec:PihawkProposal}
+    \includepdf[pages=-]{../picopter/Documents2015/ardupilot-proposal/ardupilot-proposal.pdf}
+
+\end{appendices}
+
+	
+\end{document}
+
