@@ -44,14 +44,22 @@
 
   %\maketitle
   \begin{abstract}
-Abstract
+Multirotors are here to stay, and may soon be expected to interact in a human environment.
+Commodity quadcopters are advertising capabilities to act as  chase-cams and turn-key mapping solutions, but none of the current generation commodity uav chase-cams offer computer vision driven or even assisted flight modes to improve tracking, image framing or obstacle avoidance.  Such vision assisted routines would also apply to autonomous or semi-autonomous inspection tasks for fixtures in remote or hazardous environments.
+
+In this project, we build on the results of previous year groups and implement turn-key waypoint navigation and failsafe methods using the ardupilot software stack, and develop robust object tracking, data collection behaviours and exclusion zones on a computationally starved platform with an aim to integrate vision assisted behaviours in low-cost, lightweight UAVs.
+
+In this talk I present our work towards robust, low-cost, computer vision driven object tracking and chase-cam behaviour.
+
 
   \end{abstract}
 
   \tableofcontents
-
+  \pagebreak
   \section{Introduction}
 	Background, Aims
+
+
 
 \section{History / prior works / relevance}
 	Chase-cam (Lily cam, ...Dog)
@@ -59,17 +67,45 @@ Abstract
 	Remote Inspection, approached by mining industry technology start-ups
 
 \section{Motivation}
-	I really really want one.
-	computer vision assisted control routine
-	Obstacle avoidance
-	Introduction to SLAM systems
+	Almost all commercial and commodity UAVs are incorporating a very capable singe-board computer.
+	The UAVs we are targeting operate with small payloads, must react quickly to changes in the environment, and frequently feature camera systems.
+	Despite falling costs of hobby and toy grade multirotor systems, Collision avoidance, Object tracking, 	mapping and inspection are not well catered for in the current market of UAVs.
+	Part of the problem is that very few sensors are of the appropriate scale, or mass for low cost UAVs.
+	Ground based vehicles have an advantage that a 1D sensor need only be swept in one axis to search for obstacles, but a UAV must collect data filling a volume ahead of it. About the only form of sensor capable of doing this is a 3D laser scanner which is a high-precision, high-cost, high-mass device.
+	A simple camera collects data from an appropriately large volume at high enough speeds to navigate a multirotor, but the data is often difficult or computationally expensive to interpret.
+
+	With environmental data collected by an efficient computer-vision routine, the current generation of multi-rotor devices would be able to interact in a human environment.
+
+	Computer vision assisted control routine
+
+	Collision avoidance
+	Object tracking
+	Mapping
+	Inspection
+	
+	Mention of SLAM systems
+
 
 \section{Project log}
 
-	Platform
-		Description
-			Frame, Flight controller, processor, gimbal
-		Platform Weaknesses
+	\subsection{Platform}
+		\subsubsection{Description}
+			This project centred around a hexacopter based on the DJI F550 frame. This frame allows for a generous lift capacity, and plenty of space to fasten flight assist hardware, and represents a low cost platform so that our work can be reproduced by a sufficiently motivated hobbyist.
+			
+			In this work, the flight tasks are based around two physically separate processors; the Flight Controller, and the Server. This allows a stable, known safe build to be maintained on the flight controller, while experimental code runs on the server. If the server fails for any reason, the flight controller will maintain flight, and it allows the operator to engage various fail-safe behaviours without having to rely on the experimental code.
+			At hand-over, the server was a Raspberry Pi model B+, and the fight controller was a NAZA lite.
+			This combination did not go together smoothly. The NAZA lite was designed as an entry level free-flight controller and did not expose any interfaces for telemetry or data acquisition.  As such, the previous teams had to duplicate the GPS and IMU sensors to have that data available to the server's algorithms.  We made some attempts to break into the data channels of this flight controller between the IMU and GPS units, but the raw GPS and compass data was not particularly useful without the accelerometer and gyro data.  This channel had also been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.  A community RC group had reverse engineered this link, and we ported their code-base to the raspberry pi.
+
+			The NAZA also did not feature waypoint navigation features, or secondary command channels so the previous teams used a relay board to physically switch the control inputs from the RC receiver to the server, and implemented their own flight control algorithms.  We were told that server lock-ups frequently caused the craft to power-dive.
+			
+
+
+
+			The server is a Raspberry Pi V2,
+
+			Flight controller
+			 processor, gimbal
+		\subsubsection{Platform Weaknesses}
 			(fitness for purpose etc)
 			NAZA not hackable, deliberately obfuscated comms
 			RC switch did not permit altitude control
@@ -77,7 +113,7 @@ Abstract
 			Waypoints handled on the embedded system despite GPS loiter behaviour of the flight computer.
 
 
-	Team Achievements
+	\subsection{Team Achievements}
 		Conversion to Ardupilot 3.3
 		Mavlink, waypoints, altidude control, failsafes, telemetry
 		Full, and revocable hand-over to external autopilot.
@@ -90,14 +126,15 @@ Abstract
 		Capture and tagging of images for proprietary offline 3D reconstruction.
 
 \section{Object tracker Theory}
-	Position estimation
-	Desired relative pose
+	\subsection{Position estimation}
 
-	Observations and uncertainties
-		Structure from image
+	\subsection{Desired relative pose}
+
+	\subsection{Observations and uncertainties}
+		\subsubsection{Structure from image}
 			Computational load
 			Live capture
-		Uncertainties:
+		\subsubsection{Uncertainties}
 			A good uncertainty model encodes what is known and what is unknown.
 			Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
 			In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
@@ -122,16 +159,16 @@ Abstract
 						Motion Estimates
 							IMU data
 							Kalman style interpolation
-	Current implementation
-		Strengths
+	\subsection{Current implementation}
+		\subsubsection{Strengths}
 			Encodes appropriate information in a covariance matrix form
 			Cleanly integrates multiple observations into an object model
-		Weaknesses
+		\subsubsection{Weaknesses}
 			Camera model does not account for uncertainty from angle of pixels, gimbal pose, IMU sample time (angular velocity), GPS drift
 			GPS drift is deliberately ignored in favour of applying a generous velocity uncertainty to the objects.
 			Cannot describe complex distributions (unbounded polynomial order)
 				arbitrary geometry Uncertainty Images from SoggyDog
-	Future Work
+	\subsection{Future Work}
 			Velocity interpolation not implemented.
 			Graph traversal (SLAM) not implemented.
 			Describe hyperbolic distribution and flaws
@@ -140,14 +177,14 @@ Abstract
 
 \section{Test Results}
 
-	Software tests
+	\subsection{Software tests}
 		Gimbal pose, IMU data, GPS location etc
 		Camera uncertainty models combined with assumptions
 		Pretty pictures
 			Multiple observations with time-evolution
 
-	Live tests
-		*Able to physically follow one object, while tracking multiple others.
+	\subsection{Live tests}
+		Able to physically follow one object, while tracking multiple others.
 		Acceleration limits, velocity limits, time-cutoffs.
 		pitch and roll stability
 		Basic colour matching limitations
@@ -181,8 +218,8 @@ Abstract
 
 \begin{appendices}
   %\addcontentsline{toc}{section}{Appendices}
-  \section{ArduPilot (Pixhawk) Proposal} \label{sec:PihawkProposal}
-    \includepdf[pages=-]{../picopter/Documents2015/ardupilot-proposal/ardupilot-proposal.pdf}
+%  \section{ArduPilot (Pixhawk) Proposal} \label{sec:PihawkProposal}
+%    \includepdf[pages=-]{../picopter/Documents2015/ardupilot-proposal/ardupilot-proposal.pdf}
 
 \end{appendices}
 
