@@ -168,7 +168,10 @@ In this project, we build on the results of previous year groups and implement t
 
   \subsection{Desired relative pose}
     Once the object is located in 3D space, the copter will calculate a vantage point from which to view it.
-    This vantage point could include information regarding the terrain, the size and trajectory of the object, the field of view of the camera etc.  This is the point at which cinematographic style is included in the algorithm.
+    This vantage point could include information regarding the terrain, the size and trajectory of the object, the field of view of the camera, locations of light sources etc.  This is the point at which cinematographic style is included in the algorithm.
+
+  \subsection{Motion Control}
+    Moving the copter causes large changes to the pitch and roll of the copter 
 
   \subsection{Observations and uncertainties}
     \subsubsection{Structure from image}
@@ -176,7 +179,7 @@ In this project, we build on the results of previous year groups and implement t
       One of the critical features of a modern SLAM systems is an acknowledgement that every measurement comes with some uncertainty. 
       In many cases, the treatment of uncertainty can be very simple, carrying a one-dimensional confidence value, to the very complex, where every aspect of the measurement is recorded for post-processing where non-linear couplings can be accounted for.
 
-      Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.
+      Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods with a second, less-than-live graph traversal process.
 
   \subsection{Uncertainty Analysis}
     A good uncertainty model encodes everything that is known and nothing of what is unknown.
@@ -250,7 +253,7 @@ In this project, we build on the results of previous year groups and implement t
       The Lidar Lite time of flight optical range sensor has a 3 degree conical beam, a 10mm starting aperture, 10mm resolution and a small amount of sample noise. It can locate an object in 3D space, but the uncertainty model favours depth to breadth.
       The GPS gets interesting, In general we can say it has at least 3m sigma = 1 radius. However, over short time periods it has a resolution much better than that.
     \subsubsection{The Hyperbolic case}
-      With a negative determinant, the uncertainty model becomes hyperbolic, expanding toward an asymptote with an elliptical cross section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
+      With a negative determinant, the uncertainty model becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty, with minimal changes to the uncertainty model.
       In order to represent the hyperbolic distribution, one of the diagonal terms of the covariance matrix must be negative.  Here, positive numbers represent increasing certainty, zero represents total uncertainty.  so mixing a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
       This stems from the hyperbola having a normalisation function over its area.  Given that it integrates to infinity, the probability density function would be infinitesimal everywhere.  A more useful description of its behaviour would be that its cross-section integrates to one.
       This model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
@@ -274,21 +277,12 @@ In this project, we build on the results of previous year groups and implement t
       With a single image from a camera, the only valid fact about the location of an object is that it lies somewhere within an infinite cone.
 
     \subsubsection{Extensions}
-      Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  uncertainty models
-      Kalman style filtering
-      
-      Relative uncertainties
-      Networks of relative measurements
-      Graph traversal
-        Nodes:
-          Objects' time history (including self)
-            Survey Markers
-          Assumptions (GPS objects?)
-        Links
-          Relative Observations
-          Motion Estimates
-            IMU data
-            Kalman style interpolation
+      Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this can be extended to a form consistent with Kalman style filter for the motion of every visible landmark.
+
+      Storing a motion history of the objects would facilitate the generation of a time-dependent network of estimated locations and relative measurements.
+      Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution and relative measurements.  A live process need only deal with the instantaneous positions of the robot and landmarks, but the models can be further refined less-than-live by a graph traversal.
+      A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
+
   \subsection{Current implementation}
     \subsubsection{Strengths}
       Encodes appropriate information in a covariance matrix form
@@ -296,10 +290,12 @@ In this project, we build on the results of previous year groups and implement t
       Makes assumptions explicitly
     \subsubsection{Weaknesses}
       Camera model does not account for uncertainty from angle of pixels, gimbal pose, IMU sample time (angular velocity), GPS drift
-      GPS drift is deliberately ignored in favour of applying a generous velocity uncertainty to the objects.
+      Requires accurate calibration data for the image sensor
+      GPS drift is deliberately assumed to be negligible with short-term measurements.
       Cannot describe complex distributions (unbounded polynomial order)
         arbitrary geometry Uncertainty Images from SoggyDog
   \subsection{Future Work}
+      The Object tracker 
       Velocity interpolation not implemented.
       Graph traversal (SLAM) not implemented.
       Describe hyperbolic distribution and flaws
@@ -310,8 +306,15 @@ In this project, we build on the results of previous year groups and implement t
 \section{Test Results}
 
   \subsection{Simulation tests}
-    Gimbal pose, IMU data, GPS location etc
-    We used 
+    We used the simulator built alongside the arducopter firmware to run our tests.  This simulator is detailed enough to handle the inertial model of the platform and inject noise into the sensors.
+    This simulator allows us to run our full software stack on any computer with a functioning compiler.
+    The object tracking code estimates the location of the objects using data from the flight controller covering the Gimbal pose, the roll, pitch and yaw of the copter, and the GPS location as fused with the accelerometer and gyro data.  Using a servo driven gimbal on the real copter we cannot perform mechanical compensation of the pitch and roll without injecting extremely large angular uncertainties.  The object estimation code compensates for the pitch and roll using matrices representing body rotations under OpenCV.
+    Because the the camera cannot resolve range, an assumption model was added to the code reducing the columnar vision model to a spot on the ground.
+
+    This compensation is designed to cleanly counter the non-linear second order signal injection, but with the camera mechanically coupled to a laptop instead of the simulated copter, the loop becomes completely unstable.
+
+    Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator, using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter, the copter moves away from the object, turning around as it does so.
+
 
     Camera uncertainty models combined with assumptions
     Pretty pictures
