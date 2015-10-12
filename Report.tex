@@ -54,38 +54,54 @@ In this project, we build on the results of previous year groups and implement t
   \tableofcontents
   \pagebreak
   \section{Introduction}
-  Background, Aims
+    Background, Aims
 
-  \subsection{Motivation}
-    Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
+    \subsection{Motivation}
+      Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
 
-    A number of Commercial Micro UAVs are beginning to advertise the ability to act as an autonomous chase-cam \cite{Lily} \cite{AirDog}.  Almost all of these systems rely on a tracking device on the user, and many navigate entirely by GPS.  While the performance of GPS is improving, the performance of a chase-cam will be limited to the update rate and fix accuracy of the beacon and drone GPS modules.  It also requires a lock to be achieved in both devices before tracking can commence.
+      A number of Commercial Micro UAVs are beginning to advertise the ability to act as an autonomous chase-cam \cite{Lily} \cite{AirDog}.  Almost all of these systems rely on a tracking device on the user, and many navigate entirely by GPS.  While the performance of GPS is improving, the performance of a chase-cam will be limited to the update rate and fix accuracy of the beacon and drone GPS modules.  It also requires a lock to be achieved in both devices before tracking can commence.
 
-    The power distribution and plant monitoring sectors have recently been taking on small fleets of drones to perform routine inspection of remote, hazardous or otherwise difficult locations \cite{RopeAccess}.  Many of these applications are reasonably repetitive and well defined enough to fully automate, but cannot be navigated by GPS alone due to the poor repeatability of the GPS system.
-    During this project, we were approached by a mining safety startup interested in using UAVs for routine site inspections.
+      The power distribution and plant monitoring sectors have recently been taking on small fleets of drones to perform routine inspection of remote, hazardous or otherwise difficult locations \cite{RopeAccess}.  Many of these applications are reasonably repetitive and well defined enough to fully automate, but cannot be navigated by GPS alone due to the poor repeatability of the GPS system.
+      During this project, we were approached by a mining safety startup interested in using UAVs for routine site inspections.
 
-  The UAVs we are targeting operate with small payloads, must react quickly to changes in the environment, and frequently feature camera systems.
-  Despite falling costs of hobby and toy grade multirotor systems, Collision avoidance, Object tracking,   mapping and inspection are not well catered for in the current market of UAVs.
-  Part of the problem is that very few sensors are of the appropriate scale, or mass for low cost UAVs.
-  Ground based vehicles have an advantage that a 1D sensor need only be swept in one axis to search for obstacles, but a UAV must collect data filling a volume ahead of it. About the only form of sensor capable of doing this is a 3D laser scanner which is a high-precision, high-cost, high-mass device.
-  A simple camera collects data from an appropriately large volume at high enough speeds to navigate a multirotor, but the data is often difficult or computationally expensive to interpret.
+      The UAVs we are targeting operate with small payloads, must react quickly to changes in the environment, and frequently feature camera systems.
+      Despite falling costs of hobby and toy grade multirotor systems, Collision avoidance, Object tracking,   mapping and inspection are not well catered for in the current market of UAVs.
+      Part of the problem is that very few sensors are of the appropriate scale, or mass for low cost UAVs.
+      Ground based vehicles have an advantage that a 1D sensor need only be swept in one axis to search for obstacles, but a UAV must collect data filling a volume ahead of it. About the only form of sensor capable of doing this is a 3D laser scanner which is a high-precision, high-cost, high-mass device.
+      A simple camera collects data from an appropriately large volume at high enough speeds to navigate a multirotor, but the data is often difficult or computationally expensive to interpret.
 
-  With environmental data collected by an efficient computer-vision routine, the current generation of multi-rotor devices would be able to interact in a human environment.
+      With environmental data collected by an efficient computer-vision routine, the current generation of multi-rotor devices would be able to interact in a human environment.
 
-  Computer vision assisted control routines would permit common low cost UAVs to better frame extreme sport chase-cam film reels, automatically avoid obstacles, and stabilise GPS variances in remotely operated inspection tasks.
+      Computer vision assisted control routines would permit common low cost UAVs to better frame extreme sport chase-cam film reels, automatically avoid obstacles, and stabilise GPS variances in remotely operated inspection tasks.
 
-    In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection 
+      In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection 
 
-    Much of the technology related to multi-copters is applicable to most other forms of UAV.  The vast array of applications micro UAVs have found suggests this work may find use in Agriculture, mapping, targeted crop dusting, Cinematography, extreme-sport photography, Data collection, remote observation and inspection and hazard and environmental monitoring.
+      Much of the technology related to multi-copters is applicable to most other forms of UAV.  The vast array of applications micro UAVs have found suggests this work may find use in Agriculture, mapping, targeted crop dusting, Cinematography, extreme-sport photography, Data collection, remote observation and inspection and hazard and environmental monitoring.
 
+  \section{Literature Review}
 
+    \subsection{Optical Search}
+      Search and Rescue is a field that is extremely appropriate to automation due to the difficulty in mobilising teams in remote, harsh or dangerous conditions.  A micro UAV can be deployed quickly and commence the search operation before boots can be placed on the ground.
+      The UAV Outback Challenge \cite{OutbackChallenge} is a regular competition to perform various search and rescue missions autonomously.  The performance criteria are deliberately set very high, and the competition frequently goes uncompleted.  
+      In 2012, CanberraUAV \cite{canberrauav}, a UAV development team from Canberra completed the search aspect of the competition.
+      After trying a number of image recognition algorithms, the search algorithm that they flew with simply looked for the blue of the jeans of Outback Joe \cite{tridge}. This was sufficient to locate the target in a 4x6 km area.  This goes to show that even a minimally complex routine can be effectively applied in appropriate conditions.
 
-\section{History / prior works / relevance}
+    \subsection{Terrain Estimation via Optical Flow Methods}
+      Adding sensors to allow the copter to understand its environment is a surprisingly difficult task.  Conventional contact methods operate at ranges far too close for UAVs, ultrasonics are buffeted by down-wash and most depth sensors are either too heavy or suffer under intense light.
+      In terms of simplicity of algorithms, biomimicry has turned up some surprising results.  In 2004, a French research group applied a number of optical flow algorithms to the navigation of a small helicopter inspired by insect vision \cite{InsectFlowMethods}.  The computer vision routines were used to inform the navigation loops, following the middle of urban tunnels and reducing speed in dense clutter, without necessarily computing the distance to the obstacles.  These routines were relatively expensive in terms of computational power, but extremely simple and parallelizeable.
 
+    \subsection{Position Estimation using Stereoscopic Methods}
+      Any measurement will have an associated uncertainty, extracting the most information out of a collection of measurements rarely involves taking the most accurate measurements.  It is possible to estimate the position of an object or feature using multiple images separated in either space or time, but making effective use the information requires an understanding of how the uncertainties behave.  Error Modeling in Stereo Navigation \cite{stereoUnc} investigates a number of routines to estimate the position of a vehicle by tracking visible land-marks in a stereoscopic system, and notes the interaction between the geometry of the uncertainties, and the stability of the result.
+
+    \subsection{Altitude Estimation and Odometry by optical flow}
+      Elementary methods are still interesting for the sake of biomimicry, and indeed, a 20 element photo-array was demonstrated sufficient to control the altitude of an aircraft \cite{optoAlt}, coupling the altitude to the velocity.
+      Dedicated, low resolution optical flow sensors have become exceedingly cheap since the market saturation of the optical mouse, and many commodity flight computers already include doppler information from GPS modules. 
+      Combining this data allows the UAV to estimate the distance to the terrain, \cite{RemTerrain}.  These commodity sensors typically do not include circuitry for computing rotation, but given the cost of the sensors, that limitation can be overcome using two sensors \cite{FlowRot}.
+      With the availability of these parts, a number of UAV systems such as ArduPilot already include support for these devices in their code-base \cite{ArduFlow}.
+      This support also covers pitch and roll compensation and position stabilisation using odometetry.
 
 
 \section{Project History}
-
 
     \subsubsection{2013}
       The 2013 team, O'Connor \cite{OConnor} and Venables \cite{Venables} established the project with the purchase of a DJI flame-wheel F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted into an autonomous platform with the addition of a Raspberry Pi single-board computer (RPi) and a circuit to switch the control channels from the radio receiver to the RPi GPIO outputs.
@@ -142,7 +158,10 @@ In this project, we build on the results of previous year groups and implement t
 
     By using a fully-featured open-source flight controller, we also had access to the community developed simulation environment.  The Ardupilot simulator is designed to simulate the behaviour of the flight controller against various hardware configurations and flight styles.  As such, it incorporates a comprehensive inertial model and noise injection to the various sensors.  We were able to compile our tests for our development machines couple them to the simulator over a local TCP socket, and test them against the same version of the flight control firmware as we had uploaded to the physical copter.
 
+
 \section{Object tracker}
+  
+
   \subsection{Position estimation}
     After experimenting with the rudimentary PID loop, we moved on to basic triangulation methods to estimate the location of the object with the assumption that it was on the ground.  We were estimating the height based on the GPS altitude data streaming from the NAZA GPS, but without access to the NAZA's internal barometer, the uncertainty in height caused the navigation loop stability to vary significantly minute by minute.
     After the upgrade to the Pixhawk, we had access to the data from the Extended Kalman Filter in the flight controller.  We had also made significant changes to the way the flight controller was guided by the server, and this prompted a near total re-write of the object tracking code-base.
@@ -159,31 +178,117 @@ In this project, we build on the results of previous year groups and implement t
 
       Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.
 
-    \subsubsection{Uncertainties}
-      A good uncertainty model encodes everything that is known and nothing of what is unknown.
-      Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
-      In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
-        Monocular Camera uncertainty model
-        Lidar Lite Uncertainty model
-        GPS uncertainty model
-        Time evolution uncertainty models
-        Base Utilities
-          Vector sum
-          combination
-          point sample
-        Kalman style filtering
+  \subsection{Uncertainty Analysis}
+    A good uncertainty model encodes everything that is known and nothing of what is unknown.
+    Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
+    In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
+    \subsubsection{Ellipsoidal models as Covariance Matrices}
+      For the sake of computational load, we've assumed the collected data has a three dimensional Gaussian distribution which we represent using covariance matrices.
+      By permitting singular matrices, this gives us the flexibility to represent uncertainty distributions unbounded in length in any direction, and still combine them to clearly defined local distributions.
+      These covariance matrix models require normalisation to behave as probability density functions, but since the normalisation constant is fully defined by the coefficients, it can be completely ignored until the distribution is to be rasterized and rendered.
+    \subsubsection{Transformations}
+      These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors.
+      
+      Mean:
+      Multiple observations of a single point are generally subject to averaging, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
+      \begin{figure}
+      \centering
+      \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{images/GaussianLine1.png}
+        \caption{Measurement 1}
+        \label{fig:uncProdsub1}
+      \end{subfigure}%
+      \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{images/GaussianLine2.png}
+        \caption{Measurement 2}
+        \label{fig:uncProdsub2}
+      \end{subfigure}
+      \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{images/GaussianLine3.png}
+        \caption{Combined Measurements}
+        \label{fig:uncProdsub3}
+      \end{subfigure}
+      \caption{The Product of Two Uncertainty Distributions}
+      \label{fig:uncProd}
+      \end{figure}
+      If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
+      Using the form above, the product of density functions becomes the sum of polynomials.
+        For brevity, the matrix form is shown below. This requires the result to be non-singular, because a singular matrix does not define a fixed centroid. However, a suitable centroid can be chosen.
+      Vector sum:
+        Treating the ellipsoids as vectors requires the definition of a vector sum.
+        Again, the matrix form below does not permit singular Matrices as inputs nor outputs, but unpacking it into polynomial form allows suitable centroids to be chosen.
+      \begin{figure}
+      \centering
+      \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{images/GaussianSum1.png}
+        \caption{Object at the Origin}
+        \label{fig:vectSumsub1}
+      \end{subfigure}%
+      \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{images/GaussianSum2.png}
+        \caption{Uncertain Displacement}
+        \label{fig:vectSumsub2}
+      \end{subfigure}
+      \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{images/GaussianSum3.png}
+        \caption{Final Object Location}
+        \label{fig:vectSumsub3}
+      \end{subfigure}
+      \caption{The Vector Sum of Two Uncertainty Distributions}
+      \label{fig:vectSum}
+      \end{figure}
+      In the same way as above, the vector difference can be computed.  This allows the definition of a discreet time derivative.  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged with multiple samples.
+      
+      Every sensor on our platform has some resolving power which favours particular directions.
+      Our camera cannot locate a point in 3D space, but the direction is known within some small angular uncertainty.
+      The Lidar Lite time of flight optical range sensor has a 3 degree conical beam, a 10mm starting aperture, 10mm resolution and a small amount of sample noise. It can locate an object in 3D space, but the uncertainty model favours depth to breadth.
+      The GPS gets interesting, In general we can say it has at least 3m sigma = 1 radius. However, over short time periods it has a resolution much better than that.
+    \subsubsection{The Hyperbolic case}
+      With a negative determinant, the uncertainty model becomes hyperbolic, expanding toward an asymptote with an elliptical cross section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
+      In order to represent the hyperbolic distribution, one of the diagonal terms of the covariance matrix must be negative.  Here, positive numbers represent increasing certainty, zero represents total uncertainty.  so mixing a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
+      This stems from the hyperbola having a normalisation function over its area.  Given that it integrates to infinity, the probability density function would be infinitesimal everywhere.  A more useful description of its behaviour would be that its cross-section integrates to one.
+      This model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
+      \begin{figure}
+      \centering
+      \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[width=.7\linewidth]{images/GaussianRay1.png}
+        \caption{Negative Determinant}
+        \label{fig:hyperbolicsub1}
+      \end{subfigure}%
+      \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[width=.7\linewidth]{images/GaussianRay2.png}
+        \caption{Normalised}
+        \label{fig:hyperbolicsub2}
+      \end{subfigure}
+      \caption{A Hyperbolic Distribution Showing Laser-like normalisation}
+      \label{fig:hyperbolic}
+      \end{figure}
+      With a single image from a camera, the only valid fact about the location of an object is that it lies somewhere within an infinite cone.
+
+    \subsubsection{Extensions}
+      Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  uncertainty models
+      Kalman style filtering
+      
       Relative uncertainties
-        Networks of relative measurements
-        Graph traversal
-          Nodes:
-            Objects' time history (including self)
-              Survey Markers
-            Assumptions (GPS objects?)
-          Links
-            Relative Observations
-            Motion Estimates
-              IMU data
-              Kalman style interpolation
+      Networks of relative measurements
+      Graph traversal
+        Nodes:
+          Objects' time history (including self)
+            Survey Markers
+          Assumptions (GPS objects?)
+        Links
+          Relative Observations
+          Motion Estimates
+            IMU data
+            Kalman style interpolation
   \subsection{Current implementation}
     \subsubsection{Strengths}
       Encodes appropriate information in a covariance matrix form
