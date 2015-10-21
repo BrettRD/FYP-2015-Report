@@ -15,7 +15,7 @@
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 %Colours!
-\usepackage[table]{xcolor}
+%\usepackage[table]{xcolor}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
@@ -188,6 +188,8 @@ In this project, we build on the results of previous year groups and implement t
   \subsection{Motion Control}
     As of version 3.3, The Arducopter code-base has support for arbitrary velocity vectors.  The first iteration of the motion control algorithm mirrored the old PID code base and transmitted a velocity vector in body coordinates to the flight controller and closed the motion loop through the automation server.  The long feedback loops had problems with delays and required detailed tuning.  The Pixhawk already has this tuning, so the motion control code was replaced by a guided-mode waypoint.  Essentially, the automation server transmits the vantage point and a desired yaw value to the Pixhawk leaving the automation code very simple, the feedback loops very tight and fast, and remove utterly redundant tuning parameters.
 
+    Using the Pixhawk's internal control loops to move the copter has one disadvantage relating to update frequency.  The motion commands are sent over an auxiliary telemetry link
+
   \subsection{Observations and uncertainties}
     \subsubsection{Structure from image}
       Resolving structure from image is a field unto itself.  In general, the computational load of modelling the environment in three dimensions live is beyond supercomputing clusters that would fit in the mass restrictions of most multi-rotors.  However, Simultaneous Localisation and Mapping (SLAM) systems have optimised components of this field to a vast array of algorithms of varying computational power requirements.
@@ -221,24 +223,21 @@ In this project, we build on the results of previous year groups and implement t
       \end{bmatrix}, k=3
       \end{equation}
 
-
+      In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed form solution and can be calculated from the inverse covariance matrix directly.
+      This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, follows almost exactly the definition of an ellipsoid and permits highly efficient geometric manipulation.
       \begin{equation}
-      C_n = \Sigma^{-1}= \frac{1}{2}\begin{bmatrix}
-        \frac{1}{\sigma_{xx}} & \frac{1}{\sigma_{xy}} & \frac{1}{\sigma_{xz}} \\[0.3em]
-        \frac{1}{\sigma_{yx}} & \frac{1}{\sigma_{yy}} & \frac{1}{\sigma_{yz}} \\[0.3em]
-        \frac{1}{\sigma_{zx}} & \frac{1}{\sigma_{zy}} & \frac{1}{\sigma_{zz}} 
-      \end{bmatrix}
+      e^{-\left( \left(x-\mu\right)^T C_n \left(x-\mu\right) \right)}
       \end{equation}
-      In order to save on computing resources, we use the inverse of the covariance natively, and ignore the normalisation constant, which has a closed form anyway.
-      This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, and permits highly efficient geometric manipulation.
-
-      By permitting singular matrices, the elliptical format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  These singular forms still combine efficiently to form non-singular localised distributions.
+      By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  These singular forms still combine efficiently to form non-singular localised distributions.
       
     \subsubsection{Transformations}
       These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors.
       
       Mean:
       Multiple observations of a single point are generally subject to averaging, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
+      
+      If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
+      Using the form above, the product of density functions becomes the sum of polynomials.
       \begin{figure}
       \centering
       \begin{subfigure}{.3\textwidth}
@@ -262,13 +261,16 @@ In this project, we build on the results of previous year groups and implement t
       \caption{The Product of Two Uncertainty Distributions}
       \label{fig:uncProd}
       \end{figure}
+
       \begin{equation}
       C_3 = C_1+C_2
+      \end{equation}
+      \begin{equation}
       \mu_3 = C_3^{-1} . (C_1.\mu_1 + C_2.\mu_2)
       \end{equation}
-      If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
-      Using the form above, the product of density functions becomes the sum of polynomials.
-        For brevity, the matrix form is shown below. This requires the result to be non-singular, because a singular matrix does not define a fixed centroid. However, a suitable centroid can be chosen.
+      Clearly apparent here, is that \(\mu_3\) is undefined if \(C_3\) is singular.
+      This is not a loss of generality, merely an artefact of the matrix form.  If the matrix \(C\) represents a ray, the centroid \(\mu\) has no fixed definition, and can simply be chosen within one degree of freedom.
+
       Vector sum:
         Treating the ellipsoids as vectors requires the definition of a vector sum.
         Again, the matrix form below does not permit singular Matrices as inputs nor outputs, but unpacking it into polynomial form allows suitable centroids to be chosen.
@@ -297,18 +299,45 @@ In this project, we build on the results of previous year groups and implement t
       \end{figure}
       \begin{equation}
       C_3 = (C_1^{-1} + C_2^{-1})^{-1}
+      \end{equation}
+      \begin{equation}
       \mu_3 = \mu_1 + \mu_2
       \end{equation}
       In the same way as above, the vector difference can be computed.  This allows the definition of a discreet time derivative.  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged with multiple samples.
 
       Scale:
+      \begin{equation}
+      C' = S^{-2} C
+      \end{equation}
+      \begin{equation}
+      \mu' = S \mu
+      \end{equation}
+
+      \begin{equation}
+      S=\begin{bmatrix}
+        S_x & 0 & 0 \\[0.3em]
+        0 & S_y & 0 \\[0.3em]
+        0 & 0 & S_z
+      \end{bmatrix}
+      \end{equation}
+      Where \(S_n\) represent the change of scale along any axis.
+
 
       Rotation:
+      The ellipsoidal structure can be rotated as follows:
+      \begin{equation}
+      C' = R^{-1} C R
+      \end{equation}
+      \begin{equation}
+      \mu' = R^{-1} \mu
+      \end{equation}
+      Where \(R\) is the rotation matrix.
 
+    \subsubsection{Taking measurements}
       Every sensor on our platform has some resolving power which favours particular directions.
       Our camera cannot locate a point in 3D space, but the direction is known within some small angular uncertainty.
       The Lidar Lite time of flight optical range sensor has a 3 degree conical beam, a 10mm starting aperture, 10mm resolution and a small amount of sample noise. It can locate an object in 3D space, but the uncertainty model favours depth to breadth.
-      The GPS gets interesting, In general we can say it has at least 3m sigma = 1 radius. However, over short time periods it has a resolution much better than that.
+      The GPS gets interesting, In general we can say it has at least 3m sigma = 1 radius. However, over short time periods it has a relative resolution much better than that.
     \subsubsection{The Hyperbolic case}
       \label{sec:hyperbolicCase}
       With a negative determinant, the uncertainty model becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty, with minimal changes to the uncertainty model.
@@ -341,7 +370,8 @@ In this project, we build on the results of previous year groups and implement t
       Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution and relative measurements.  A live process need only deal with the instantaneous positions of the robot and landmarks, but the models can be further refined less-than-live by a graph traversal.
       A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
       
-      Velocity
+      Some processes like optical flow are able to resolve velocity as coupled to depth. 
+
 
   \subsection{Current implementation}
     \subsubsection{Strengths}
