@@ -207,10 +207,33 @@ In this project, we build on the results of previous year groups and implement t
     A good uncertainty model encodes everything that is known and nothing of what is unknown.
     Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
     In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
-    \subsubsection{Ellipsoidal models as Covariance Matrices}
-      For the sake of computational load, we've assumed the collected data has a three dimensional Gaussian distribution which we represent using covariance matrices.
-      By permitting singular matrices, this gives us the flexibility to represent uncertainty distributions unbounded in length in any direction, and still combine them to clearly defined local distributions.
-      These covariance matrix models require normalisation to behave as probability density functions, but since the normalisation constant is fully defined by the coefficients, it can be completely ignored until the distribution is to be rasterized and rendered.
+    \subsubsection{Ellipsoidal models with Covariance Matrices}
+      For the sake of computational load, we've assumed the collected data has a three dimensional multivariate Normal distribution.  We use the quadratic form which uses the inverse of the covariance matrix.
+      \begin{equation}
+      P = \frac{1}{\sqrt{(2\pi)^k|\Sigma|}} e^{-\frac{1}{2}\left( \left(x-\mu\right)^T \Sigma^{-1} \left(x-\mu\right) \right)}
+      \end{equation}
+      where
+      \begin{equation}
+      \Sigma=\begin{bmatrix}
+        \sigma_x^2 & \sigma_{xy} & \sigma_{xz} \\[0.3em]
+        \sigma_{yx} & \sigma_y^2 & \sigma_{yz} \\[0.3em]
+        \sigma_{zx} & \sigma_{zy} & \sigma_z^2 
+      \end{bmatrix}, k=3
+      \end{equation}
+
+
+      \begin{equation}
+      C_n = \Sigma^{-1}= \frac{1}{2}\begin{bmatrix}
+        \frac{1}{\sigma_{xx}} & \frac{1}{\sigma_{xy}} & \frac{1}{\sigma_{xz}} \\[0.3em]
+        \frac{1}{\sigma_{yx}} & \frac{1}{\sigma_{yy}} & \frac{1}{\sigma_{yz}} \\[0.3em]
+        \frac{1}{\sigma_{zx}} & \frac{1}{\sigma_{zy}} & \frac{1}{\sigma_{zz}} 
+      \end{bmatrix}
+      \end{equation}
+      In order to save on computing resources, we use the inverse of the covariance natively, and ignore the normalisation constant, which has a closed form anyway.
+      This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, and permits highly efficient geometric manipulation.
+
+      By permitting singular matrices, the elliptical format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  These singular forms still combine efficiently to form non-singular localised distributions.
+      
     \subsubsection{Transformations}
       These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors.
       
@@ -239,6 +262,10 @@ In this project, we build on the results of previous year groups and implement t
       \caption{The Product of Two Uncertainty Distributions}
       \label{fig:uncProd}
       \end{figure}
+      \begin{equation}
+      C_3 = C_1+C_2
+      \mu_3 = C_3^{-1} . (C_1.\mu_1 + C_2.\mu_2)
+      \end{equation}
       If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
       Using the form above, the product of density functions becomes the sum of polynomials.
         For brevity, the matrix form is shown below. This requires the result to be non-singular, because a singular matrix does not define a fixed centroid. However, a suitable centroid can be chosen.
@@ -268,8 +295,16 @@ In this project, we build on the results of previous year groups and implement t
       \caption{The Vector Sum of Two Uncertainty Distributions}
       \label{fig:vectSum}
       \end{figure}
+      \begin{equation}
+      C_3 = (C_1^{-1} + C_2^{-1})^{-1}
+      \mu_3 = \mu_1 + \mu_2
+      \end{equation}
       In the same way as above, the vector difference can be computed.  This allows the definition of a discreet time derivative.  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged with multiple samples.
-      
+
+      Scale:
+
+      Rotation:
+
       Every sensor on our platform has some resolving power which favours particular directions.
       Our camera cannot locate a point in 3D space, but the direction is known within some small angular uncertainty.
       The Lidar Lite time of flight optical range sensor has a 3 degree conical beam, a 10mm starting aperture, 10mm resolution and a small amount of sample noise. It can locate an object in 3D space, but the uncertainty model favours depth to breadth.
@@ -306,6 +341,7 @@ In this project, we build on the results of previous year groups and implement t
       Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution and relative measurements.  A live process need only deal with the instantaneous positions of the robot and landmarks, but the models can be further refined less-than-live by a graph traversal.
       A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
       
+      Velocity
 
   \subsection{Current implementation}
     \subsubsection{Strengths}
@@ -374,6 +410,7 @@ In this project, we build on the results of previous year groups and implement t
     pitch and roll stability
 
     Basic colour matching limitations, false positives
+    The feature detection algorithm used in all testing of this platform was colour space thresholding.  In uncontrolled environments, this results in multiple detected features with no sane means of differentiating them.
 
     Computer vision is not as robust as radio links and DGPS, but allows pose and framing, and urban canyons.
 
