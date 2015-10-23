@@ -44,11 +44,10 @@
 
   %\maketitle
   \begin{abstract}
-Multirotors are here to stay, and may soon be expected to interact in a human environment.
-Commodity quadcopters are advertising capabilities to act as  chase-cams and turn-key mapping solutions, but none of the current generation commodity uav chase-cams offer computer vision driven or even assisted flight modes to improve tracking, image framing or obstacle avoidance.  Such vision assisted routines would also apply to autonomous or semi-autonomous inspection tasks for fixtures in remote or hazardous environments.
+  Multirotors are here to stay, and may soon be expected to interact in a human environment.
+  Commodity quadcopters are advertising capabilities to act as  chase-cams and turn-key mapping solutions, but none of the current generation commodity uav chase-cams offer computer vision driven or even assisted flight modes to improve tracking, image framing or obstacle avoidance.  Such vision assisted routines would also apply to autonomous or semi-autonomous inspection tasks for fixtures in remote or hazardous environments.
 
-In this project, we build on the results of previous year groups and implement turn-key waypoint navigation and failsafe methods using the ardupilot software stack, and develop robust object tracking, data collection behaviours and exclusion zones on a computationally starved platform with an aim to integrate vision assisted behaviours in low-cost, lightweight UAVs.
-
+  In this project, we build on the results of previous year groups and implement turn-key waypoint navigation and failsafe methods using the ardupilot software stack, and develop robust object tracking, data collection behaviours and exclusion zones on a computationally starved platform with an aim to integrate vision assisted behaviours in low-cost, lightweight UAVs.
   \end{abstract}
 
   \tableofcontents
@@ -206,13 +205,13 @@ In this project, we build on the results of previous year groups and implement t
       Ultimately, for the sake of rapid testing, the algorithm we have flown with deletes and regenerates the objects every cycle unless the object leaves the field of view.  This makes it very clear when the object estimation code is behaving erratically.
 
   \subsection{Uncertainty Analysis}
-    A good uncertainty model encodes everything that is known and nothing of what is unknown.
-    Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
+    A good uncertainty model encodes everything that is known and nothing of what is unknown.  Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
     In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
+
     \subsubsection{Ellipsoidal models with Covariance Matrices}
       For the sake of computational load, we've assumed the collected data has a three dimensional multivariate Normal distribution.  We use the quadratic form which uses the inverse of the covariance matrix.
       \begin{equation}
-      P = \frac{1}{\sqrt{(2\pi)^k|\Sigma|}} e^{-\frac{1}{2}\left( \left(x-\mu\right)^T \Sigma^{-1} \left(x-\mu\right) \right)}
+      PDF = \frac{1}{\sqrt{(2\pi)^k|\Sigma|}} e^{-\frac{1}{2}\left( \left(x-\mu\right)^T \Sigma^{-1} \left(x-\mu\right) \right)}
       \end{equation}
       where
       \begin{equation}
@@ -222,12 +221,19 @@ In this project, we build on the results of previous year groups and implement t
         \sigma_{zx} & \sigma_{zy} & \sigma_z^2 
       \end{bmatrix}, k=3
       \end{equation}
+      %get the justification for the product straight
+      This method is particularly convenient because the normal distribution behaves as a probability density function, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical Normal distributions is also an elliptical normal distribution.
 
-      In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed form solution and can be calculated from the inverse covariance matrix directly.
-      This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, follows almost exactly the definition of an ellipsoid and permits highly efficient geometric manipulation.
+      In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed form solution and can be calculated from the inverse covariance matrix directly as follows:
       \begin{equation}
-      e^{-\left( \left(x-\mu\right)^T C_n \left(x-\mu\right) \right)}
+      \frac{\sqrt{|C|}}{\sqrt{(2\pi)^3}}
       \end{equation}
+      This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, follows almost exactly the definition of an ellipsoid and permits highly efficient geometric manipulation:
+      \begin{equation}
+      1 = \left(x-x_0\right)^T A \left(x-x_0\right)
+      \end{equation}
+
+      With no normalisation constant, the distribution always has a value of exactly one at the centroid.
       By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  These singular forms still combine efficiently to form non-singular localised distributions.
       
     \subsubsection{Transformations}
@@ -258,7 +264,7 @@ In this project, we build on the results of previous year groups and implement t
         \caption{Combined Measurements}
         \label{fig:uncProdsub3}
       \end{subfigure}
-      \caption{The Product of Two Uncertainty Distributions}
+      \caption{The Product of Two Measurement Ellipsoids}
       \label{fig:uncProd}
       \end{figure}
 
@@ -269,11 +275,15 @@ In this project, we build on the results of previous year groups and implement t
       \mu_3 = C_3^{-1} . (C_1.\mu_1 + C_2.\mu_2)
       \end{equation}
       Clearly apparent here, is that \(\mu_3\) is undefined if \(C_3\) is singular.
-      This is not a loss of generality, merely an artefact of the matrix form.  If the matrix \(C\) represents a ray, the centroid \(\mu\) has no fixed definition, and can simply be chosen within one degree of freedom.
+      This is not a loss of generality, merely an artefact of the matrix form.  If the matrix \(C_3\) represents a ray, \(C_3\)  will have one eigenvalue of zero and \(\mu\) will have a degree of freedom along the corresponding eigenvector.
+      %weak assertion
+      In the case of spherical distributions, the successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
+      
+      This method minimises the sum of the squares of the Mahalanobis distances between the two ellipsoids, effectively creating a least sum of squares regression method that accounts for the covariance geometry of each measurement as successive ellipsoids are added to the mix.
 
       Vector sum:
-        Treating the ellipsoids as vectors requires the definition of a vector sum.
-        Again, the matrix form below does not permit singular Matrices as inputs nor outputs, but unpacking it into polynomial form allows suitable centroids to be chosen.
+        Treating the ellipsoids as approximate displacement vectors requires the definition of vector operators.
+        Again, the matrix form below does not permit singular Matrices as inputs nor outputs, but unpacking it into polynomial form does allow suitable centroids to be chosen.
       \begin{figure}
       \centering
       \begin{subfigure}{.3\textwidth}
@@ -363,6 +373,14 @@ In this project, we build on the results of previous year groups and implement t
       \end{figure}
       With a single image from a camera, the only valid fact about the location of an object is that it lies somewhere within an infinite cone.
 
+
+    \subsubsection{Allocating Observations to Objects}
+      If multiple observations are made of multiple similar objects, the observations must be allocated to the appropriate object.
+
+      The observations must be ranked by some metric, and sorted.  For m objects, and n observatons, this takes m*n memory.  In our low resolution computer vision pipeline, the number of visually non-unique objects is very small, and the number of objects that can be distinguished in one frame is limited by processing power.
+
+
+
     \subsubsection{Extensions}
       Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this can be extended to a form consistent with Kalman style filter for the motion of every visible landmark.
 
@@ -370,8 +388,9 @@ In this project, we build on the results of previous year groups and implement t
       Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution and relative measurements.  A live process need only deal with the instantaneous positions of the robot and landmarks, but the models can be further refined less-than-live by a graph traversal.
       A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
       
-      Some processes like optical flow are able to resolve velocity as coupled to depth. 
-
+      Some computer vision processes like optical flow are able to resolve velocity coupled to depth.
+      As it stands, the uncertainty analysis on our platform does not account for correlations between velocity and position, but the matrices can simply be expanded to six dimensions.
+      XXX See control system theory, state vectors and time-step matrices.
 
   \subsection{Current implementation}
     \subsubsection{Strengths}
@@ -428,21 +447,18 @@ In this project, we build on the results of previous year groups and implement t
     In one of the tests, velocity predictions were enabled along with object creation with an inverted axis on the inertial compensation matrices. This system quickly generated more than seventy unique objects in memory and ran velocity prediction on all of them live. The algorithm's CPU usage never approached the requirements for the computer vision despite running an unoptimised sorting and allocation routine, and uncertainty analysis.
     
 
-    The copter is able to physically follow one object, while tracking multiple others, though calibrating multiple systems at once has severely limited the opportunities for testing.
-    Using the guided waypoint functions and absolute yaw commands, The chase behaviour is not as snappy as with the RC inputs but has been far more predictable.  The motion updates appear to to be obeyed at several Hertz.
-    
-    The algorithm sends motion requests every frame, which is far more than the copter could reasonably obey.
+    The copter is able to physically follow one object, while tracking multiple others, though maintaining calibration on multiple systems has severely limited the opportunities for testing edge cases.
 
-
-
-    Acceleration limits, velocity limits, time-cutoffs.
-
-    pitch and roll stability
+    The change from RC inputs to Velocity vector commands for the sake of control linearity resulted in much more predictable and consistent behaviour without significant loss of control bandwidth.
+    To reduce the length of the feedback loop, we used the guided waypoint functions and absolute yaw commands in Arducopter 3.x.  This change drastically improved the flight stability of the copter, but significantly reduced the control bandwidth.  The waypoint updates appear to to be obeyed at several Hertz, despite a new request being sent every frame (30Hz).
 
     Basic colour matching limitations, false positives
-    The feature detection algorithm used in all testing of this platform was colour space thresholding.  In uncontrolled environments, this results in multiple detected features with no sane means of differentiating them.
+    The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this results in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
 
-    Computer vision is not as robust as radio links and DGPS, but allows pose and framing, and urban canyons.
+    Many more advanced object detection processes became available on our platform over the course of the project thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
+
+    As mentioned earlier, the Arducopter firmwares offer a GPS driven \"follow me\" mode using the Android application \"Tower\".  
+    Our Computer vision only routines are by no means as robust as radio links and DGPS and greatly increase the complexity of the system, but the computer vision allows controlled pose and framing, and functions in urban canyon environments.
 
 \section{Future Work}
 
@@ -470,7 +486,8 @@ In this project, we build on the results of previous year groups and implement t
 
 \section{Conclusions}
   We have greatly improved the capabilities of the UWA autonomous hexacopter platform, and have brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes.
-  We have also demonstrated that low-power single board computers can perform live computer vision processes and uncertainty based reasoning to track and follow moving objects in poor GPS environments. 
+  We have also demonstrated that low-power single board computers can perform live computer vision processes and rudimentary SLAM processes with uncertainty based reasoning to track and follow moving objects.
+
 
 
 
