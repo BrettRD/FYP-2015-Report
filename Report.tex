@@ -279,7 +279,7 @@
       %weak assertion
       In the case of spherical distributions, the successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
       
-      This method minimises the sum of the squares of the Mahalanobis distances between the two ellipsoids, effectively creating a least sum of squares regression method that accounts for the covariance geometry of each measurement as successive ellipsoids are added to the mix.
+      This method minimises the sum of the squares of the Mahalanobis distances between the result and the initial two ellipsoids.  This property of minimised Mahalanobis distances is maintained with additional ellipsoids, effectively creating a least sum of squares regression method that accounts for the covariance geometry of each measurement as successive ellipsoids are added to the mix.
 
       Vector sum:
         Treating the ellipsoids as approximate displacement vectors requires the definition of vector operators.
@@ -352,8 +352,8 @@
       \label{sec:hyperbolicCase}
       With a negative determinant, the uncertainty model becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty, with minimal changes to the uncertainty model.
       In order to represent the hyperbolic distribution, one of the diagonal terms of the covariance matrix must be negative.  Here, positive numbers represent increasing certainty, zero represents total uncertainty.  so mixing a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
-      This stems from the hyperbola having a normalisation function over its area.  Given that it integrates to infinity, the probability density function would be infinitesimal everywhere.  A more useful description of its behaviour would be that its cross-section integrates to one.
-      This model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
+      This stems from the hyperbola having a normalisation function over its area.  Given that it integrates to infinity, the probability density function would be infinitesimal everywhere.  A more useful description of its behaviour would be that the line along the centre has a density of one, or alternatively, that its cross-section integrates to one
+      The latter model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
       \begin{figure}
       \centering
       \begin{subfigure}{.5\textwidth}
@@ -371,15 +371,14 @@
       \caption{A Hyperbolic Distribution Showing Laser-like normalisation}
       \label{fig:hyperbolic}
       \end{figure}
-      With a single image from a camera, the only valid fact about the location of an object is that it lies somewhere within an infinite cone.
-
+      With a single image from a camera, the only information collected about the location of an object is that it lies somewhere within a narrow cone of infinite length.  (Ignoring exploitable imperfections in the camera such as focal length)
 
     \subsubsection{Allocating Observations to Objects}
       If multiple observations are made of multiple similar objects, the observations must be allocated to the appropriate object.
 
-      The observations must be ranked by some metric, and sorted.  For m objects, and n observatons, this takes m*n memory.  In our low resolution computer vision pipeline, the number of visually non-unique objects is very small, and the number of objects that can be distinguished in one frame is limited by processing power.
+      The observations must be ranked by some metric, and sorted.  For \(m\) objects, and \(n\) observations, this takes \(m \times n\) memory.  In our low resolution computer vision pipeline, the number of possible visually non-unique objects is very small, so this product remains quite small in practice.
 
-
+      The choice of ranking metric is very much a context dependent decision.  In general though, because the ellipsoids can be interpreted as probability density functions of prediction, there is a function that defines the probability of intersection. The Bhattacharyya distance is a metric used in estimating the separability of clustered data, and makes for a reasonable first-choice of metric.
 
     \subsubsection{Extensions}
       Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this can be extended to a form consistent with Kalman style filter for the motion of every visible landmark.
@@ -389,8 +388,8 @@
       A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
       
       Some computer vision processes like optical flow are able to resolve velocity coupled to depth.
-      As it stands, the uncertainty analysis on our platform does not account for correlations between velocity and position, but the matrices can simply be expanded to six dimensions.
-      XXX See control system theory, state vectors and time-step matrices.
+      As it stands, the uncertainty analysis on our platform does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature.
+      %XXX See control system theory, state vectors and time-step matrices.
 
   \subsection{Current implementation}
     \subsubsection{Strengths}
@@ -437,28 +436,32 @@
     The object estimation code compensates for the pitch and roll using matrices representing body rotations under OpenCV.
     This compensation is designed to cleanly counter the non-linear second order signal injection, but with the camera mechanically coupled to a laptop instead of the simulated copter, the loop becomes completely unstable.
 
-    Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator, using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter, the copter moves away from the object, turning around as it does so.
-
-    Associating observations with objects 
-
+    Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator, using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter, the copter moves forward, away from the object, turning around as it does so.
 
   \subsection{Live tests}
-    The observation allocation routine selects the most likely object an observation could refer to. If the associated probability is below some threshold, it instead creates a new object.
-    In one of the tests, velocity predictions were enabled along with object creation with an inverted axis on the inertial compensation matrices. This system quickly generated more than seventy unique objects in memory and ran velocity prediction on all of them live. The algorithm's CPU usage never approached the requirements for the computer vision despite running an unoptimised sorting and allocation routine, and uncertainty analysis.
+    The copter is able to physically follow one object, while tracking multiple others.  Unfortunately, problems in maintaining calibration on multiple systems, particularly the camera gimbal, has severely limited the opportunities for testing edge cases in an end-to-end system.
+
+    \subsubsection{Navigation System}
+      The change from RC inputs to Velocity vector commands for the sake of control linearity resulted in much more predictable and consistent behaviour without significant loss of control bandwidth.
+      To reduce the length of the feedback loop, we used the guided waypoint functions and absolute yaw commands in Arducopter 3.2 onward.  This change drastically improved the flight stability of the copter, but significantly reduced the control bandwidth.  The waypoint updates appear to to be obeyed at several Hertz, despite a new request being sent every frame (30Hz).
+      The behaviour of our final navigation system was refreshingly predictable and by far the best choice for development in the near future, despite the loss of bandwidth.
     
+    \subsubsection{Object Localisation}
+      The observation allocation routine selects the most likely object an observation could refer to. If the associated probability is below some threshold, it instead creates a new object.
+      In one of the tests, velocity predictions were enabled along with object creation with an inverted axis on the inertial compensation matrices. This system quickly generated more than seventy unique objects in memory and ran velocity prediction on all of them live. The algorithm's CPU usage never approached the requirements for the computer vision despite running an unoptimised sorting and allocation routine, and uncertainty analysis.
 
-    The copter is able to physically follow one object, while tracking multiple others, though maintaining calibration on multiple systems has severely limited the opportunities for testing edge cases.
 
-    The change from RC inputs to Velocity vector commands for the sake of control linearity resulted in much more predictable and consistent behaviour without significant loss of control bandwidth.
-    To reduce the length of the feedback loop, we used the guided waypoint functions and absolute yaw commands in Arducopter 3.x.  This change drastically improved the flight stability of the copter, but significantly reduced the control bandwidth.  The waypoint updates appear to to be obeyed at several Hertz, despite a new request being sent every frame (30Hz).
+    \subsubsection{Object detection}
+      Basic colour matching limitations, false positives
+      The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this results in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
 
-    Basic colour matching limitations, false positives
-    The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this results in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
+      Many more advanced object detection processes became available on our platform over the course of the project thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
 
-    Many more advanced object detection processes became available on our platform over the course of the project thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
+    \subsubsection{Bench Marks}
+      As mentioned earlier, the Arducopter firmwares offer a GPS driven \"follow me\" mode using the Android application \"Tower\".
+      The GPS tether mode was very stable and eminently usable in real circumstances.  It suffered from worse update bandwidth issues than our autonomous modes, and frequently allowed the beacon to leave the frame.  We can only presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
 
-    As mentioned earlier, the Arducopter firmwares offer a GPS driven \"follow me\" mode using the Android application \"Tower\".  
-    Our Computer vision only routines are by no means as robust as radio links and DGPS and greatly increase the complexity of the system, but the computer vision allows controlled pose and framing, and functions in urban canyon environments.
+      The GPS chase system did have some serious flaws though, in the very poor GPS environment of the Great Court on the UWA campus, the Ublox Neo7m radio was glitching more than 500m every couple of seconds.  With no operator assistance, the loss of GPS led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple GPS modules in redundant fashion so after that lesson, we were able to combat the urban canyon environment with radio diversity.
 
 \section{Future Work}
 
@@ -487,8 +490,8 @@
 \section{Conclusions}
   We have greatly improved the capabilities of the UWA autonomous hexacopter platform, and have brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes.
   We have also demonstrated that low-power single board computers can perform live computer vision processes and rudimentary SLAM processes with uncertainty based reasoning to track and follow moving objects.
-
-
+  Our Computer-Vision-Only routines are by no means as robust as radio links and differential GPS, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn GPS beacon.
+  Our Object tracker has been demonstrated with a variety of navigation loops, some of which are not GPS dependent.  In commodity chase-cams, these control schemes could allow a graceful handover from radio beacon to computer vision in the event of a GPS failure.
 
 
 
