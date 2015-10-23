@@ -54,7 +54,7 @@
   \pagebreak
   \section{Introduction}
     Background, Aims
-
+    %XXX unapologetically copied from proposal doc, needs updating and expanding
     \subsection{Motivation}
       Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
 
@@ -129,8 +129,8 @@
       
       The server has been upgraded to a Raspberry Pi V2 single board computer, which we consider to be a computationally starved platform.  At the time of writing, the Raspberry Pi V2 has less computational power than a smartphone in the \$200 price bracket.
 
-      Flight controller
-       processor, gimbal
+      %XXXFlight controller
+      %XXXprocessor, gimbal
     \subsubsection{Platform Weaknesses}
       (fitness for purpose etc)
       We made some attempts to break into the data channel between the NAZA flight controller and its GPS module, but the raw GPS and compass data was not particularly useful without the accelerometer and gyro data.  This channel had also been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.  A community RC group had reverse engineered this link, and we ported their code to the raspberry pi and removed the Qstar-z GPS unit.
@@ -155,17 +155,18 @@
     By using a fully-featured open-source flight controller, we also had access to the community developed simulation environment.  The Ardupilot simulator is designed to simulate the behaviour of the flight controller against various hardware configurations and flight styles.  As such, it incorporates a comprehensive inertial model and noise injection to the various sensors.  We were able to compile our tests for our development machines couple them to the simulator over a local TCP socket, and test them against the same version of the flight control firmware as we had uploaded to the physical copter.
 
     \subsubsection{Sensor Duplication}
+    %XXX How many commas do you want!?
     The new configuration allowed us to fully eliminate duplicated hardware, an opportunity to fully re-build the wiring harness, and significantly reduce the weight of the craft, extending the flight time to almost twenty minutes.
     Near the end of the project, we fitted a second GPS module to the copter to combat the poor multipath environment of the UWA campus.  With the sensor fusion and Extended Kalman Filter in the Ardupilot firmware, we we able to fly on GPS alone in some of the worst urban canyons in the campus.
 
-    (image: GPS track, glitch from Uni Club to Eng Carpark)
+    %XXX(image: GPS track, glitch from Uni Club to Eng Carpark)
 
     \subsubsection{Web UI}
     We saw fit to refresh the Web UI and HUD, implementing a more appealing and maintainable template system, and adding more information to the display.
 
     \subsubsection{Cooperative Projects}
     Integration of our projects
-
+    %XXX still Dot Points
     Glyph detection
 
     Computer vision driven chase-cam behaviour
@@ -221,7 +222,7 @@
         \sigma_{zx} & \sigma_{zy} & \sigma_z^2 
       \end{bmatrix}, k=3
       \end{equation}
-      %get the justification for the product straight
+      %XXX get the justification for the product straight
       This method is particularly convenient because the normal distribution behaves as a probability density function, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical Normal distributions is also an elliptical normal distribution.
 
       In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed form solution and can be calculated from the inverse covariance matrix directly as follows:
@@ -238,7 +239,7 @@
       
     \subsubsection{Transformations}
       These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors.
-      
+      %XXX hacks and proofs should probably go to the appendices
       Mean:
       Multiple observations of a single point are generally subject to averaging, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
       
@@ -276,10 +277,9 @@
       \end{equation}
       Clearly apparent here, is that \(\mu_3\) is undefined if \(C_3\) is singular.
       This is not a loss of generality, merely an artefact of the matrix form.  If the matrix \(C_3\) represents a ray, \(C_3\)  will have one eigenvalue of zero and \(\mu\) will have a degree of freedom along the corresponding eigenvector.
-      %weak assertion
-      In the case of spherical distributions, the successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
       
       This method minimises the sum of the squares of the Mahalanobis distances between the result and the initial two ellipsoids.  This property of minimised Mahalanobis distances is maintained with additional ellipsoids, effectively creating a least sum of squares regression method that accounts for the covariance geometry of each measurement as successive ellipsoids are added to the mix.
+      This least squares regression method becomes obvious in the case of spherical distributions.  The successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
 
       Vector sum:
         Treating the ellipsoids as approximate displacement vectors requires the definition of vector operators.
@@ -396,7 +396,7 @@
       
       Encodes appropriate information in a covariance matrix form
       As it stands, all data relating to external objects is fed into the object tracking routine in a covariance matrix format.  
-
+      %XXX Still Dot points
       These covariance matrix forms mix cleanly 
       Cleanly integrates multiple observations into an object model
 
@@ -418,7 +418,7 @@
 
       The Gaussian statistics is also not capable of describing complex distributions.  Some of the best examples of advanced uncertainty treatment come out of high energy physics.  In many cases, the uncertainty distributions are encoded in a rastered probability density function, or a Fourier series with effectively unbounded order.  Such advanced treatment is undoubtedly beyond the computing capacity of commodity UAVs, but a middle ground of complexity can probably be found by mixing the above Gaussian treatment with some of the statistical weighting features of Kalman style models that also solve for sensor biases.
 
-        (image: arbitrary geometry Uncertainty Images from SoggyDog)
+        %XXX (image: arbitrary geometry Uncertainty Images from SoggyDog)
 
       
 
@@ -458,8 +458,8 @@
       Many more advanced object detection processes became available on our platform over the course of the project thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
 
     \subsubsection{Bench Marks}
-      As mentioned earlier, the Arducopter firmwares offer a GPS driven \"follow me\" mode using the Android application \"Tower\".
-      The GPS tether mode was very stable and eminently usable in real circumstances.  It suffered from worse update bandwidth issues than our autonomous modes, and frequently allowed the beacon to leave the frame.  We can only presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
+      As mentioned earlier, the Arducopter firmwares offer a GPS driven ``follow me'' mode using the Android application ``Tower''. %XXX reference Tower
+      The GPS tether mode was very stable and eminently usable in real circumstances.  It suffered from worse update bandwidth issues than our autonomous modes, and frequently allowed the beacon to leave the frame.  We can presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
 
       The GPS chase system did have some serious flaws though, in the very poor GPS environment of the Great Court on the UWA campus, the Ublox Neo7m radio was glitching more than 500m every couple of seconds.  With no operator assistance, the loss of GPS led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple GPS modules in redundant fashion so after that lesson, we were able to combat the urban canyon environment with radio diversity.
 
@@ -469,15 +469,15 @@
 
   The gimbal can be greatly improved by simply removing the gimbal entirely in favour of a fixed camera mount, or swapping the existing servo driven gimbal out for a Brushless DC motor driven gimbal for accurate mechanical image stabilisation.  The camera could benefit from a wider angle lens, however, the narrow field of view did prompt us to find a sound solution to tracking an object beyond the frame boundary.
 
-  As discussed in \ref{sec:hyperbolicCase}, the uncertainty analyses are incomplete.  Further exploration of the hyperbolic case and singular matrices would permit the use of Kalman style path prediction and improve the tracking stability.
+  As discussed in section\ref{sec:hyperbolicCase}, the uncertainty analyses are incomplete.  Further exploration of the hyperbolic case and singular matrices would permit the use of Kalman style path prediction and improve the tracking stability.
   Without solutions to the hyperbolic uncertainty case or rotational transforms, the object tracker will have somewhat unpredictable accuracy.  However, the system does function and can still benefit from case-specific functions to generate camera angles to suit artistic direction.
 
   Handling the velocity of external objects is not quite usable yet, though the code base does contain most of the requisite functions.  The code that extrapolates object object position based on velocity has been largely disabled, pending live tests of the more advanced observation allocation algorithms.  Until the objects' positions are being updated and adjusted live, there will be no data to infer velocity from, so the velocity handlers will simply be place-holders to maintain the size of the positional uncertainty of the objects.
 
-  SIFT algorithm
-  A problem addressed in \ref{sec:objectAllocation} is that the objects detected by colour thresholding have a non-zero size which goes against the assumptions implicit in the statistical treatment of the observations.  Using an algorithm like SIFT would track multiple points on any given object, and provide nearly unique visual identifiers for allocating observations to individual objects.  While this would eliminate a small sorting routine in the object allocator, the overheads of SIFT may well require a larger computing budget.
+  % SIFT algorithm
+  A problem addressed in section\ref{sec:objectAllocation} is that the objects detected by colour thresholding have a non-zero size which goes against the assumptions implicit in the statistical treatment of the observations.  Using an algorithm like SIFT would track multiple points on any given object, and provide nearly unique visual identifiers for allocating observations to individual objects.  While this would eliminate a small sorting routine in the object allocator, the overheads of SIFT may well require a larger computing budget.
 
-  Optical Flow
+  %Optical Flow
   Optical Flow is an extremely interesting avenue of research for small UAVs because the high compute-cost can be handled by dedicated silicon like an FPGA.  Coupled with a covariance uncertainty analysis, Optical flow is able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.  
 
   Adding a stereo pair of cameras to the copter using the large 550mm base-line afforded by the frame, would create multiple simultaneous position and velocity measurements, eliminating the Z-axis ambiguity over a significant usable range.  
