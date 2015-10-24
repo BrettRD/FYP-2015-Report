@@ -73,10 +73,10 @@
 
       Computer vision assisted control routines would permit common low cost UAVs to better frame extreme sport chase-cam film reels, automatically avoid obstacles, and stabilise GPS variances in remotely operated inspection tasks.
 
-      In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection 
+      In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection.
 
       Much of the technology related to multi-copters is applicable to most other forms of UAV.  The vast array of applications micro UAVs have found suggests this work may find use in Agriculture, mapping, targeted crop dusting, Cinematography, extreme-sport photography, Data collection, remote observation and inspection and hazard and environmental monitoring.
-
+      %Check the grammar here
   \section{Background}
 
     \subsection{Optical Search}
@@ -102,30 +102,27 @@
 
 \section{Project History}
 
-    \subsubsection{2013}
+    \subsection{2013}
       The 2013 team, O'Connor \cite{OConnor} and Venables \cite{Venables} established the project with the purchase of a DJI flame-wheel F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted into an autonomous platform with the addition of a Raspberry Pi single-board computer (RPi) and a circuit to switch the control channels from the radio receiver to the RPi GPIO outputs.
       The NAZA-lite at this time did not feature telemetry outputs or way-point inputs, but it was able to loiter in a stiff wind using a GPS fix.
       This team gathered location information for the RPi using a Qstarz GPS unit, and bearing information using an X-sens IMU.  The sensor duplication did not exceed the maximum payload capacity of the platform, but it did suffer a short flight-time.
       Under direct control from the RPi, the drone was able to execute basic way-point navigation.
-    \subsubsection{2014}
+    \subsection{2014}
 
       The 2014 team, Baxter \cite{Baxter}, Mazur \cite{Mazur} and Targhagh \cite{Targhagh} continued the project adding an internet accessible web UI to control the various autonomous features of the platform, displaying the flight-path of the copter and a live feed of the camera.
       The navigation routines were improved and extended to permit operation without reliable heading information, and the computer vision routines were extented.
 
-    \subsubsection{2015}
+    \subsection{2015}
       The project is being continued by Allen \cite{Allen}, Mohanty \cite{Mohanty}, Tan \cite{Tan} and Downing \cite{Downing}.
       Because of the rapid pace that the market is adopting new features and technologies, we saw fit to undertake a critical review of all aspects of the platform, and begin improvements that facilitate the current typical feature set.
 
 
   \subsection{Platform}
     \subsubsection{Description}
-      This project centred around a hexacopter based on the DJI F550 frame. This frame allows for a generous lift capacity, and plenty of space to fasten flight assist hardware, and represents a low cost platform so that our work can be reproduced by a sufficiently motivated hobbyist.
+      This project centred around a hexacopter based on the DJI F550 ``Flame Wheel'' frame. This frame allows for a generous lift capacity, and plenty of space to fasten flight assist hardware, and represents a low cost platform so that our work can be reproduced by a sufficiently motivated hobbyist.
       
-      In this work, the flight tasks are based around two physically separate processors; the Flight Controller, and the Server. This allows a stable, known safe build to be maintained on the flight controller, while experimental code runs on the server. If the server fails for any reason, the flight controller will maintain flight, and it allows the operator to engage various fail-safe behaviours without having to rely on the experimental code.
-      At hand-over, the server was a Raspberry Pi model B+, and the fight controller was a NAZA lite.
-      This combination did not go together smoothly. The NAZA lite was designed as an entry level free-flight controller and did not expose any interfaces for telemetry or data acquisition.  As such, the previous teams had to duplicate the GPS and IMU sensors to have that data available to the server's algorithms. 
-
-      The NAZA also did not feature waypoint navigation features, or secondary command channels so the previous teams used a relay board to physically switch the control inputs from the RC receiver to the server, and implemented their own flight control algorithms on the server.  We were told that server lock-ups frequently caused the craft to power-dive.
+      In this work, the flight tasks are based around two physically separate processors; the Flight Controller, and the Server. This allows a stable, known-safe build to be maintained on the flight controller, while experimental code runs on the server. If the server fails for any reason, the flight controller will maintain flight, and it allows the operator to engage various fail-safe behaviours without having to rely on the experimental code.
+      At hand-over, the server was a Raspberry Pi model B+, and the fight controller was a DJI NAZA lite.
       
       The server has been upgraded to a Raspberry Pi V2 single board computer, which we consider to be a computationally starved platform.  At the time of writing, the Raspberry Pi V2 has less computational power than a smartphone in the \$200 price bracket.
 
@@ -133,14 +130,18 @@
       %XXXprocessor, gimbal
     \subsubsection{Platform Weaknesses}
       (fitness for purpose etc)
+
       We made some attempts to break into the data channel between the NAZA flight controller and its GPS module, but the raw GPS and compass data was not particularly useful without the accelerometer and gyro data.  This channel had also been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.  A community RC group had reverse engineered this link, and we ported their code to the raspberry pi and removed the Qstar-z GPS unit.
       
       The physical switch of control from the user to the server, and the ongoing development of a control loop meant that RC switch was never configured to surrender the throttle channel, and the server was left without altitude control.  This meant that the server had continuous perturbations from the user who remained responsible for maintaining a fixed altitude by sight alone.
 
-      The NAZA is a robust, if basic free-flight controller, and did not feature telemetry.  The server did not have access to an estimate of remaining flight time, and the user could not retrieve logs in the case of a crash.
+      The NAZA and RC emulation for autonomous flight did not fit together well. The NAZA lite is designed as an entry level free-flight controller and does not expose any interfaces for telemetry or data acquisition.  As such, the previous teams had to duplicate the GPS and IMU sensors to make such information available to the server's algorithms.
 
-      Waypoints were handled on the server despite the NAZA featuring GPS assisted loiter behaviour, and a reliable return-to-launch failsafe feature.  In general, control loops should be as tight as possible and routing them through an entirely separate processor is clearly an unnecessarily long loop.
+      The NAZA Lite also does not feature waypoint navigation features, or secondary command channels so the previous teams used a relay board to physically switch the control inputs from the RC receiver to the server, and implemented their own flight control algorithms on the server.
+      This breaks the assumption that the flight controller will maintain flight during a server crash.  Indeed, we were told that server lock-ups frequently caused the craft to power-dive.
+      The server did not have access to an estimate of remaining flight time, and the user could not retrieve logs in the event of a crash.
 
+      Waypoints were handled on the server despite the NAZA featuring GPS assisted loiter behaviour, and a reliable return-to-launch failsafe feature.  In general, control loops should be as short as possible, and routing them through an entirely separate processor is clearly an unnecessarily long loop.
 
   \subsection{Team Achievements}
     \subsubsection{Flight Controller}
@@ -183,12 +184,19 @@
 
   \subsection{Desired relative pose}
     Once the object is located in 3D space, the copter will calculate a vantage point from which to view it.
-    This vantage point could include information regarding the terrain, the size and trajectory of the object, the field of view of the camera, locations of light sources etc.  This is the point at which cinematographic style is included in the algorithm.
+    This vantage point could include information regarding the terrain, the size and trajectory of the object, the field of view of the camera, locations of light sources etc.  This is the point at which cinematographic style is included in the chain.
+
+    The pose used in testing selects the nearest point at the copter's current altitude, on a cone of a given slope radiating upwards from the object.
+    The uncertainty analysis (discussed in section \ref{sec:UncertaintyAnalysis}) is available to this algorithm, and could be used in a SLAM system to select a pose that will most efficiently reduce the uncertainty of a given landmark's location.  Computation of uncertainty minimising poses can lend an observation priority metric to systems such as \cite{TrilatUnderwater}.
 
   \subsection{Motion Control}
-    As of version 3.3, The Arducopter code-base has support for arbitrary velocity vectors.  The first iteration of the motion control algorithm mirrored the old PID code base and transmitted a velocity vector in body coordinates to the flight controller and closed the motion loop through the automation server.  The long feedback loops had problems with delays and required detailed tuning.  The Pixhawk already has this tuning, so the motion control code was replaced by a guided-mode waypoint.  Essentially, the automation server transmits the vantage point and a desired yaw value to the Pixhawk leaving the automation code very simple, the feedback loops very tight and fast, and remove utterly redundant tuning parameters.
+    As of version 3.3, The Arducopter code-base has support for arbitrary velocity vectors.  The first iteration of the motion control algorithm mirrored the old RC emulation code base and transmitted a velocity vector in body coordinates to the flight controller and closed the motion loop through the automation server.  The long feedback loops had problems with delays and required detailed tuning.
+    The Pixhawk already has advanced automatic tuning routines and performs very well as a standalone autonomous platform.  To further reduce feature duplication, the motion control code was replaced by a guided-mode waypoint; the automation server simply computes and transmits the desired vantage points and yaw values to the Pixhawk.
 
-    Using the Pixhawk's internal control loops to move the copter has one disadvantage relating to update frequency.  The motion commands are sent over an auxiliary telemetry link
+    The coming Arducopter 3.4 release is set to include more advanced control schemes and support for GPS-independent autonomous features.  All of the motion control processes were kept in the code-base for comparisons and future work, particularly to facilitate a fully GPS-independent acceleration vector control scheme.
+
+    The command structure on the Pixhawk supports dead-channel detection and can execute failsafe behaviours on loss of link.  Even if our motion control system were to use an Acceleration vector output, a loss of link or server crash would engage the selected fail-safe and the copter would continue flying.
+
 
   \subsection{Observations and uncertainties}
     \subsubsection{Structure from image}
@@ -196,7 +204,10 @@
       One of the critical features of a modern SLAM systems is an acknowledgement that every measurement comes with some uncertainty. 
       In many cases, the treatment of uncertainty can be very simple, carrying a one-dimensional confidence value, to the very complex, where every aspect of the measurement is recorded for post-processing where non-linear couplings can be accounted for.
 
-      Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods with a second, less-than-live graph traversal process.
+      Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods by using a less-than-live graph traversal process.
+
+      
+
 
     \subsubsection{Observation to Object Allocation}
       \label{sec:objectAllocation}
@@ -206,6 +217,7 @@
       Ultimately, for the sake of rapid testing, the algorithm we have flown with deletes and regenerates the objects every cycle unless the object leaves the field of view.  This makes it very clear when the object estimation code is behaving erratically.
 
   \subsection{Uncertainty Analysis}
+    \label{sec:UncertaintyAnalysis}
     A good uncertainty model encodes everything that is known and nothing of what is unknown.  Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
     In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
 
@@ -223,7 +235,7 @@
       \end{bmatrix}, k=3
       \end{equation}
       %XXX get the justification for the product straight
-      This method is particularly convenient because the normal distribution behaves as a probability density function, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical Normal distributions is also an elliptical normal distribution.
+      This form is particularly convenient because the normal distribution behaves as a probability density function of prediction, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical Normal distributions is also an elliptical normal distribution.  
 
       In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed form solution and can be calculated from the inverse covariance matrix directly as follows:
       \begin{equation}
@@ -237,8 +249,8 @@
       With no normalisation constant, the distribution always has a value of exactly one at the centroid.
       By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  These singular forms still combine efficiently to form non-singular localised distributions.
       
-    \subsubsection{Transformations}
-      These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors.
+    \subsubsection{Combining measurements}
+      These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors. 
       %XXX hacks and proofs should probably go to the appendices
       Mean:
       Multiple observations of a single point are generally subject to averaging, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
@@ -281,7 +293,12 @@
       This method minimises the sum of the squares of the Mahalanobis distances between the result and the initial two ellipsoids.  This property of minimised Mahalanobis distances is maintained with additional ellipsoids, effectively creating a least sum of squares regression method that accounts for the covariance geometry of each measurement as successive ellipsoids are added to the mix.
       This least squares regression method becomes obvious in the case of spherical distributions.  The successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
 
-      Vector sum:
+      In a network of observations, using this transformation destroys the assumption of independence of the observations.  A full covariance matrix method would track this by generating cross terms.  The Covariance Intersection described in \cite{CovarNoCorrel} provides a weighted method of fusing observational data while keeping the uncertainty estimate conservative enough to retain the assumption of independence.
+
+    \subsubsection{Vector Transformations}
+    \begin{description}
+
+      \item[Vector sum] \hfill \\
         Treating the ellipsoids as approximate displacement vectors requires the definition of vector operators.
         Again, the matrix form below does not permit singular Matrices as inputs nor outputs, but unpacking it into polynomial form does allow suitable centroids to be chosen.
       \begin{figure}
@@ -313,9 +330,10 @@
       \begin{equation}
       \mu_3 = \mu_1 + \mu_2
       \end{equation}
-      In the same way as above, the vector difference can be computed.  This allows the definition of a discreet time derivative.  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged with multiple samples.
+      Again, this ignores cross terms that would be generated from a full covariance matrix.  It can be thought of as a means of collapsing multiple chained, relative observations into a single relative observation.
 
-      Scale:
+
+      \item[Scale] \hfill \\
       \begin{equation}
       C' = S^{-2} C
       \end{equation}
@@ -331,9 +349,9 @@
       \end{bmatrix}
       \end{equation}
       Where \(S_n\) represent the change of scale along any axis.
+      The scale operator can be used to reverse the direction of a vector.  This allows the definition of a discreet time derivative \(\dot{x} = (x(t_1) - x(t_2))/(t_2-t_1)\).  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged by intersecting multiple samples.
 
-
-      Rotation:
+      \item[Rotate] \hfill \\
       The ellipsoidal structure can be rotated as follows:
       \begin{equation}
       C' = R^{-1} C R
@@ -342,7 +360,7 @@
       \mu' = R^{-1} \mu
       \end{equation}
       Where \(R\) is the rotation matrix.
-
+    \end{description}
     \subsubsection{Taking measurements}
       Every sensor on our platform has some resolving power which favours particular directions.
       Our camera cannot locate a point in 3D space, but the direction is known within some small angular uncertainty.
@@ -388,16 +406,16 @@
       A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
       
       Some computer vision processes like optical flow are able to resolve velocity coupled to depth.
-      As it stands, the uncertainty analysis on our platform does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature.
+      As it stands, the uncertainty analysis on our platform does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature when only a correlation between \(\dot{x}\) and \(z\) is known.  For sensors that cannot resolve velocity, the additional matrix elements are just zeroes.
       %XXX See control system theory, state vectors and time-step matrices.
 
   \subsection{Current implementation}
     \subsubsection{Strengths}
       
-      Encodes appropriate information in a covariance matrix form
-      As it stands, all data relating to external objects is fed into the object tracking routine in a covariance matrix format.  
+      Our current implementation attempts to encode all appropriate information in an inverse covariance matrix format, preserving as much information as possible while reducing the number of implicit assumptions.  As it stands, all data relating to external objects is fed into the object tracking routine in a covariance matrix format.  
+
       %XXX Still Dot points
-      These covariance matrix forms mix cleanly 
+      As far as the process can be described in elliptical models, these covariance matrix forms combine cleanly and consistently into compound models of chained observations.
       Cleanly integrates multiple observations into an object model
 
       Makes assumptions explicitly
@@ -419,9 +437,6 @@
       The Gaussian statistics is also not capable of describing complex distributions.  Some of the best examples of advanced uncertainty treatment come out of high energy physics.  In many cases, the uncertainty distributions are encoded in a rastered probability density function, or a Fourier series with effectively unbounded order.  Such advanced treatment is undoubtedly beyond the computing capacity of commodity UAVs, but a middle ground of complexity can probably be found by mixing the above Gaussian treatment with some of the statistical weighting features of Kalman style models that also solve for sensor biases.
 
         %XXX (image: arbitrary geometry Uncertainty Images from SoggyDog)
-
-      
-
 
 \section{Test Results}
 
