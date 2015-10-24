@@ -35,6 +35,8 @@
      pdfsubject = {Hexacopter FYP 2015}
 }
 
+%unused refs
+%OptoFlowStab
 
 
 \begin{document}
@@ -55,7 +57,7 @@
   \section{Introduction}
     Background, Aims
     %XXX unapologetically copied from proposal doc, needs updating and expanding
-    \subsection{Motivation}
+    \section{Motivation}
       Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
 
       A number of Commercial Micro UAVs are beginning to advertise the ability to act as an autonomous chase-cam \cite{Lily} \cite{AirDog}.  Almost all of these systems rely on a tracking device on the user, and many navigate entirely by GPS.  While the performance of GPS is improving, the performance of a chase-cam will be limited to the update rate and fix accuracy of the beacon and drone GPS modules.  It also requires a lock to be achieved in both devices before tracking can commence.
@@ -116,7 +118,6 @@
       The project is being continued by Allen \cite{Allen}, Mohanty \cite{Mohanty}, Tan \cite{Tan} and Downing \cite{Downing}.
       Because of the rapid pace that the market is adopting new features and technologies, we saw fit to undertake a critical review of all aspects of the platform, and begin improvements that facilitate the current typical feature set.
 
-
   \subsection{Platform}
     \subsubsection{Description}
       This project centred around a hexacopter based on the DJI F550 ``Flame Wheel'' frame. This frame allows for a generous lift capacity, and plenty of space to fasten flight assist hardware, and represents a low cost platform so that our work can be reproduced by a sufficiently motivated hobbyist.
@@ -166,15 +167,17 @@
     We saw fit to refresh the Web UI and HUD, implementing a more appealing and maintainable template system, and adding more information to the display.
 
     \subsubsection{Cooperative Projects}
-    Integration of our projects
-    %XXX still Dot Points
-    Glyph detection
+    In order to keep a well rounded perspective on our scope, the team agreed to design set our respective scopes as interdependent modular components in a much larger system.  This made it painfully clear when the scope or generality of our work fell short.
+    
+    Tan \cite{Tan} developed a library of feature detection and extraction routines and assessed the optimisation potential for each on the single board computer of our platform.
 
-    Computer vision driven chase-cam behaviour
+    Allen \cite{Allen} investigated means of implementing collision avoidance on a UAV, developing a robust algorithm to find the shortest detour around an exclusion zone, and experimenting with low-confidence occupancy grids.
 
-    Waypoint modifier routine using polygonal no-fly zones and geo-fencing
+    Mohanty \cite{Mohanty} worked on Capture and Tagging of images to suit proprietary offline 3D reconstruction algorithms, and the generation of paths with which to scan objects and fields.
 
-    Capture and tagging of images to suit proprietary offline 3D reconstruction algorithms.
+    The Computer vision driven chase-cam behaviour described here is powered by the optimised Computer Vision routines under active development by Tan \cite{Tan}.
+
+    All Motion Control routines in the code base were designed keeping in mind that they must eventually be integrated with the collision avoidance and geo-fencing routines developed by Allen \cite{Allen}.  This included the mapping paths used by Mohanty \cite{Mohanty}.
 
 \section{Object tracker}
 
@@ -206,8 +209,7 @@
 
       Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods by using a less-than-live graph traversal process.
 
-      
-
+      %XXX get a reference
 
     \subsubsection{Observation to Object Allocation}
       \label{sec:objectAllocation}
@@ -218,13 +220,15 @@
 
   \subsection{Uncertainty Analysis}
     \label{sec:UncertaintyAnalysis}
+
     A good uncertainty model encodes everything that is known and nothing of what is unknown.  Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
     In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
+    
 
     \subsubsection{Ellipsoidal models with Covariance Matrices}
       For the sake of computational load, we've assumed the collected data has a three dimensional multivariate Normal distribution.  We use the quadratic form which uses the inverse of the covariance matrix.
       \begin{equation}
-      PDF = \frac{1}{\sqrt{(2\pi)^k|\Sigma|}} e^{-\frac{1}{2}\left( \left(x-\mu\right)^T \Sigma^{-1} \left(x-\mu\right) \right)}
+      PDF = \frac{1}{\sqrt {(2\pi)^k|\Sigma|}} e^{-\frac{1}{2}\left( \left(x-\mu\right)^T \Sigma^{-1} \left(x-\mu\right) \right)}
       \end{equation}
       where
       \begin{equation}
@@ -247,12 +251,11 @@
       \end{equation}
 
       With no normalisation constant, the distribution always has a value of exactly one at the centroid.
-      By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  These singular forms still combine efficiently to form non-singular localised distributions.
+      By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  Such distributions are extremely common as measurements, an absence of information about constraints along a given axis would just be a zero in he inverse covariance matrix \cite{UncertainGeo}.  These singular forms still combine efficiently to form non-singular localised distributions.
       
     \subsubsection{Combining measurements}
       These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors. 
       %XXX hacks and proofs should probably go to the appendices
-      Mean:
       Multiple observations of a single point are generally subject to averaging, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
       
       If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
@@ -330,8 +333,7 @@
       \begin{equation}
       \mu_3 = \mu_1 + \mu_2
       \end{equation}
-      Again, this ignores cross terms that would be generated from a full covariance matrix.  It can be thought of as a means of collapsing multiple chained, relative observations into a single relative observation.
-
+      Again, this ignores cross terms that would be generated from a full covariance matrix.  It can be thought of as a means of collapsing multiple chained, relative observations or motion estimates into a single relative observation.
 
       \item[Scale] \hfill \\
       \begin{equation}
@@ -360,6 +362,8 @@
       \mu' = R^{-1} \mu
       \end{equation}
       Where \(R\) is the rotation matrix.
+      The rotation transformation is 
+
     \end{description}
     \subsubsection{Taking measurements}
       Every sensor on our platform has some resolving power which favours particular directions.
@@ -368,28 +372,40 @@
       The GPS gets interesting, In general we can say it has at least 3m sigma = 1 radius. However, over short time periods it has a relative resolution much better than that.
     \subsubsection{The Hyperbolic case}
       \label{sec:hyperbolicCase}
-      With a negative determinant, the uncertainty model becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty, with minimal changes to the uncertainty model.
-      In order to represent the hyperbolic distribution, one of the diagonal terms of the covariance matrix must be negative.  Here, positive numbers represent increasing certainty, zero represents total uncertainty.  so mixing a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
-      This stems from the hyperbola having a normalisation function over its area.  Given that it integrates to infinity, the probability density function would be infinitesimal everywhere.  A more useful description of its behaviour would be that the line along the centre has a density of one, or alternatively, that its cross-section integrates to one
+      With a system that allows seamless representations of ellipsoids with singular matrices, it is not much of a stretch to consider ellipsoids represented by matrices with a negative determinant; the uncertainty ellipsoid becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
+      A simple hyperbolic form aligned along an axis will have one negative diagonal term, and zeros for all off-diagonal terms.
+      It is worth reiterating here that positive numbers represent increasing certainty and zero represents total uncertainty.  So intersecting a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
+      This stems from a hyperbolic PDF requiring a normalisation function over its area;  The location of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
+
+      Given that hyperbolic volume integrates to infinity, a probability density function would be infinitesimal everywhere.  A more useful definition of its behaviour would be that the line along the centre has a density of one (Figure \ref{fig:hyperbolicsub2}), or alternatively, that its cross-section integrates to one (Figure \ref{fig:hyperbolicsub3}).
       The latter model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
       \begin{figure}
       \centering
-      \begin{subfigure}{.5\textwidth}
+      \begin{subfigure}{.33\textwidth}
         \centering
-        \includegraphics[width=.7\linewidth]{images/GaussianRay1.png}
-        \caption{Negative Determinant}
+        \includegraphics[width=.9\linewidth]{images/GaussianRay1.png}
+        \caption{Negative Determinant ellipsoid}
         \label{fig:hyperbolicsub1}
       \end{subfigure}%
-      \begin{subfigure}{.5\textwidth}
+      \begin{subfigure}{.33\textwidth}
         \centering
-        \includegraphics[width=.7\linewidth]{images/GaussianRay2.png}
-        \caption{Normalised}
+        \includegraphics[width=.9\linewidth]{images/GaussianRay3.png}
+        \caption{Normalised Major Axis Density}
         \label{fig:hyperbolicsub2}
       \end{subfigure}
-      \caption{A Hyperbolic Distribution Showing Laser-like normalisation}
+      \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=.9\linewidth]{images/GaussianRay2.png}
+        \caption{Normalised Cross Section Integral}
+        \label{fig:hyperbolicsub3}
+      \end{subfigure}
+      \caption{A Hyperbolic Distribution with Normalisations}
       \label{fig:hyperbolic}
       \end{figure}
       With a single image from a camera, the only information collected about the location of an object is that it lies somewhere within a narrow cone of infinite length.  (Ignoring exploitable imperfections in the camera such as focal length)
+      In the case of stereo imaging, a the hyperbolic measurements of points in the near field would immediately reduce to localised ellipsoids, while points in the far field would become narrow hyperbolic distributions.
+
+      The hyperbolic structure is symmetrical like the ellipse, which suggests probability behind the camera.  With decent image classifiers this is unlikely to be a problem as the final localised object will fall on the intersection of the rays.
 
     \subsubsection{Allocating Observations to Objects}
       If multiple observations are made of multiple similar objects, the observations must be allocated to the appropriate object.
@@ -399,10 +415,36 @@
       The choice of ranking metric is very much a context dependent decision.  In general though, because the ellipsoids can be interpreted as probability density functions of prediction, there is a function that defines the probability of intersection. The Bhattacharyya distance is a metric used in estimating the separability of clustered data, and makes for a reasonable first-choice of metric.
 
     \subsubsection{Extensions}
-      Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this can be extended to a form consistent with Kalman style filter for the motion of every visible landmark.
+
+
+      Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this landmark velocity can be extended to a form consistent with a Kalman style motion filter for the each visible landmark.
 
       Storing a motion history of the objects would facilitate the generation of a time-dependent network of estimated locations and relative measurements.
-      Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution and relative measurements.  A live process need only deal with the instantaneous positions of the robot and landmarks, but the models can be further refined less-than-live by a graph traversal.
+      Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution, and relative measurements.
+
+
+
+      Building a single covariance matrix for the entire state-space generates extremely large matrices very quickly, and every algorithm that implements full-state covariance pays attention to pruning the map in some way\cite{monoslam} \cite{airshipSLAM}.
+      
+      A live process need only deal with the instantaneous positions of the robot and a small collection of landmarks. This sub-set of landmarks can be dealt with in a full-state covariance matrix \cite{monoslam}.  
+      
+      The lesser ``full-state'' covariance matrix can be generated by collapsing dependent chains of observations down using the vector sum, and combining network loops with the intersection into landmarks.  The ``full state'' covariance matrix can be chosen from the resulting landmarks that best reduce absolute navigation uncertainty.  Further observations are still generated as atomic structures and added to the network, then used to refine the larger covariance matrix by the graph traversal algorithm.  
+
+
+      \cite{SLAMgraph}
+
+      but the landmark uncertainties can be further refined by a less-than-live by a graph traversal.
+
+
+
+
+
+
+
+
+
+
+
       A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
       
       Some computer vision processes like optical flow are able to resolve velocity coupled to depth.
@@ -415,7 +457,8 @@
       Our current implementation attempts to encode all appropriate information in an inverse covariance matrix format, preserving as much information as possible while reducing the number of implicit assumptions.  As it stands, all data relating to external objects is fed into the object tracking routine in a covariance matrix format.  
 
       %XXX Still Dot points
-      As far as the process can be described in elliptical models, these covariance matrix forms combine cleanly and consistently into compound models of chained observations.
+      As far as the process can be described in elliptical models, these covariance matrix forms combine cleanly and consistently with 
+       into compound models of chained observations, and closed loops of observations can be collapsed into single relative 
       Cleanly integrates multiple observations into an object model
 
       Makes assumptions explicitly
@@ -532,4 +575,5 @@
 
   
 \end{document}
+
 
