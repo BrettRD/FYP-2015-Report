@@ -325,7 +325,7 @@
 
       %XXX get a reference
     \subsubsection{Observations and uncertainties}
-
+    \label{sec:ObsAndUnc}
     %Make it clear how much of this approach you developed yourself.
     %Maybe also mention your work in 'Related Work'
       \subsubsubsection{Observation to Object Allocation}
@@ -373,6 +373,7 @@
         By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  Such distributions are extremely common as measurements, an absence of information about constraints along a given axis would just be a zero in he inverse covariance matrix \cite{UncertainGeo}.  These singular forms still combine efficiently to form non-singular localised distributions.
         
       \subsubsubsection{Combining measurements}
+      \label{sec:covarInter}
         The covariance structures are well suited to use as vectors, automatically calculating the uncertainty of any combination of vectors. 
         %XXX hacks and proofs should probably go to the appendices
         Multiple observations of a single point are generally combined with a weighted average, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
@@ -416,6 +417,7 @@
         This least squares regression method becomes obvious in the case of spherical distributions.  The successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
 
         In a network of observations, using this transformation destroys the assumption of independence of the observations.  A full covariance matrix method would track this by generating cross terms.  The Covariance Intersection described in \cite{CovarNoCorrel} provides a weighted method of fusing observational data while keeping the uncertainty estimate conservative enough to retain the assumption of independence.
+        The algorithm in this report can be considered as a destructive intersection, where the two observations are collapsed into one; any use of the initial observations would invoke the lost cross-terms.
 
       \subsubsubsection{Vector Transformations}
       
@@ -485,9 +487,13 @@
 
       \subsubsubsection{Taking measurements}
         Every sensor on our platform has some resolving power which favours particular directions.
+
         Our camera cannot locate a point in 3D space, but the direction is known within some small angular uncertainty.
+        Our implementation takes creates a ray of some width along the Z-axis, and rotates it to where the the point of interest would lie on the focal plane in front of the camera.  At this time, the ray has exactly no divergence, pending a solution to the normalisation of the ray described in \ref{sec:hyperbolicCase}.
+
         The Lidar Lite time of flight optical range sensor has a 3 degree conical beam, a 10mm starting aperture, 10mm resolution and a small amount of sample noise. It can locate an object in 3D space, but the uncertainty model favours depth to breadth.
         The GPS gets interesting.  In general we can say it has at least 3m \(\sigma=1\) radius; however, over short time periods it has a relative resolution much better than that.
+
       \subsubsubsection{The Hyperbolic case}
         \label{sec:hyperbolicCase}
         With a system that allows seamless representations of ellipsoids with singular matrices, it is not much of a stretch to consider ellipsoids represented by matrices with a negative determinant; the uncertainty ellipsoid becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
@@ -532,6 +538,16 @@
 
         The choice of ranking metric is very much a context-dependent decision.  In general though, because the ellipsoids can be interpreted as probability density functions of prediction, there is a function that defines the probability of intersection. The Bhattacharyya distance is a metric used in estimating the separability of clustered data, and makes for a reasonable first-choice of metric.
 
+    \subsubsection{Assumptions}
+      We have tried to make all of our assumptions explicitly, and have, to a large extent, succeeded.
+      Many of the assumptions in the object localisation code have even had to be expressed in the covariance forms described above.
+
+      GPS drift has been deliberately assumed to be negligible, instead preferring to have our coordinate frame drift with the GPS signal.  This was encoded as a velocity uncertainty ellipsoid encoded in all detected objects.
+      This way, the system will operate based on what is effectively DGPS resolution, which is the case on all current chase-cam implementations anyway.
+
+      To assess the stability of the object locator, we set the observation allocator to create a new object for each observation, and assumed the object was at ground level.
+      The assumption that the object is at ground level was defined using the same covariance model format as any other observation in the system; this time, a singular matrix defining an infinite plane at approximately zero altitude.
+      Using a destructive Covariance Intersection described Section \ref{sec:covarInter}, locating the intersection between the ground and the ray from camera to object becomes a trivial application of uncertain geometry.
 
   \subsection{Results and Discussion}
 
@@ -572,6 +588,32 @@
 
         The GPS chase system did have some serious flaws though.  In the very poor GPS environment of the Great Court on the UWA campus, the Ublox Neo7m radio was deviating more than 500m every couple of seconds.  With no operator assistance, the loss of GPS led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple GPS modules in redundant fashion.  So we were able to combat the urban canyon environment with radio diversity.
 
+    \subsection{Extensions}
+
+      \subsubsection{Atomic Graph-Traversal SLAM}
+
+      \label{sec:SLAMproposal}
+        The following is a speculative description of what is potentially an entirely new SLAM process using the uncertainty analysis outlined in Section \ref{sec:ObsAndUnc}.
+
+        Full-state covariance SLAM has demonstrated some truly incredible results, but is limited in its applications by the large computing requirements.  It has also been criticised for the way it treats non-linearity in the observations is makes between landmarks.
+
+
+        Storing a motion history of the objects would facilitate the generation of a time-dependent network of estimated locations and relative measurements.
+        Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution, and relative measurements.
+
+        Building a single covariance matrix for the entire state-space generates extremely large matrices very quickly, and every algorithm that implements full-state covariance pays attention to pruning the map in some way\cite{monoslam} \cite{airshipSLAM}.
+        
+        A live process need only deal with the instantaneous positions of the robot and a small collection of landmarks. This sub-set of landmarks can be dealt with in a full-state covariance matrix \cite{monoslam}.  
+        
+        The lesser ``full-state'' covariance matrix can be generated by collapsing dependent chains of observations down using the vector sum, and combining network loops with the intersection into landmarks.  The ``full state'' covariance matrix can be chosen from the resulting landmarks that best reduce absolute navigation uncertainty.  Further observations are still generated as atomic structures and added to the network, then used to refine the larger covariance matrix by the graph traversal algorithm.  
+
+        but the landmark uncertainties can be further refined by a less-than-live by a graph traversal \cite{SLAMgraph}.
+
+        %A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
+
+
+
+
 \section{Conclusions}
 
 We reviewed, re-designed and re-built the UWA autonomous hexacopter; thereby greatly improving its overall capabilities and making it fit-for-purpose as a development platform for autonomous navigational routines. The re-build involved replacement of both the flight controller and the server. The new flight controller provided the following capabilities:
@@ -590,6 +632,10 @@ We brought the code-base up to a level where it is feasible to implement rudimen
 %XXX copied in the intro
 
 %BUSHIT STATEMENT ABOUT YOUR GIFT TO HUMANITY AND THE BRIGHT FUTURE IT UNVEILS.
+The processes described here can be applied to almost any UAV with modest processing power, and offer additional capabilties for handling edge-case scenarios.
+This work brings us one step further to allowing UAVs to interact with a human environment.
+
+
 
 \section{Recommendations}
 
@@ -610,6 +656,10 @@ We brought the code-base up to a level where it is feasible to implement rudimen
   Optical Flow is an extremely interesting avenue of research for small UAVs because the high compute-cost can be handled by dedicated silicon like an FPGA.  Coupled with a covariance uncertainty analysis, Optical flow was able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.  
   
   As it stands, the uncertainty analysis in our implementation does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature when only a correlation between \(\dot{x}\) and \(z\) is known.  For sensors that cannot resolve velocity, the additional matrix elements are just zeroes.
+
+  Implementing Optical Flow with the uncertain geometry methods extended to \(6\times6\) position and velocity covariances is very straightforward. The probability distributions of optical flow have described in the literature \cite{FlowUncert}, and from there, the application is exactly the same as any other camera data; set depth-certainty to zero and rotate into place. 
+
+
     %XXX See control system theory, state vectors and time-step matrices.
 
 
@@ -635,20 +685,8 @@ We brought the code-base up to a level where it is feasible to implement rudimen
 %---------------------------------------------------------
 
 \begin{appendices}
-  \section{Atomic Graph-Traversal SLAM Proposal} \label{sec:SLAMproposal}
-    
-    Storing a motion history of the objects would facilitate the generation of a time-dependent network of estimated locations and relative measurements.
-    Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution, and relative measurements.
 
-    Building a single covariance matrix for the entire state-space generates extremely large matrices very quickly, and every algorithm that implements full-state covariance pays attention to pruning the map in some way\cite{monoslam} \cite{airshipSLAM}.
-    
-    A live process need only deal with the instantaneous positions of the robot and a small collection of landmarks. This sub-set of landmarks can be dealt with in a full-state covariance matrix \cite{monoslam}.  
-    
-    The lesser ``full-state'' covariance matrix can be generated by collapsing dependent chains of observations down using the vector sum, and combining network loops with the intersection into landmarks.  The ``full state'' covariance matrix can be chosen from the resulting landmarks that best reduce absolute navigation uncertainty.  Further observations are still generated as atomic structures and added to the network, then used to refine the larger covariance matrix by the graph traversal algorithm.  
-
-    but the landmark uncertainties can be further refined by a less-than-live by a graph traversal \cite{SLAMgraph}.
-
-    %A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
+%Octave Code
 
 
 
