@@ -586,63 +586,38 @@ Web UI
 
 \section{Conclusions}
 
-  \subsection{Platform}
+We reviewed, re-designed and re-built the UWA autonomous hexacopter; thereby greatly improving its overall capabilities and making it fit-for-purpose as a development platform for autonomous navigational routines. The re-build involved replacement of both the flight controller and the server. The new flight controller provided the following capabilities:
+\begin{itemize}
+  \item New gimbal features for the object tracker.
+  \item Waypoint navigation.
+  \item Robust and consistent failsafe behaviours.
+  \item Extended Kalman Filter for flight dynamics.
+  \item Live telemetry and reporting of flight parameters.
+  %more here
+\end{itemize}
 
-    When we started with the new flight controller, we were using the Arducopter 3.2 firmware. To exploit new gimbal features for the object tracker, we upgraded to Arducopter 3.3rc10 and finally 3.3 stable when it released near the end of the project.  The next version of the firmware is set to include features like guided-mode without a GPS lock requirement, which will open possibilities for fully computer vision driven algorithms.  The UWA platform will continue to benefit from improvements to the Arducopter firmware into the foreseeable future.
+During the project, the flight controller firmware advanced from Arducopter V3.2, through V3.3rc10, to V3.3 stable near the end of the project.
+The enhanced server supported advanced computer vision routines.
+We brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes. We also demonstrated that low-power single board computers can perform live computer vision processes and elements of SLAM processes with uncertainty based reasoning to track and follow moving objects. Our Computer-Vision-Only routines are by no means as robust as radio links and differential GPS, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn GPS beacon. Our Object tracker was demonstrated with a variety of navigation loops, some of which were not GPS dependent. In commodity chase-cams, these control schemes could allow a graceful handover from radio beacon to computer vision in the event of a GPS failure.
 
-  \subsection{Object tracker}
-    Our current implementation attempts to encode all appropriate information in an inverse covariance matrix format, preserving as much information as possible while reducing the number of implicit assumptions.
-
-    %XXX Still Dot points
-      As it stands, all data relating to external objects is fed into the object tracking routine in a covariance matrix format.  
-    All geometric information the the be described in elliptical models, these covariance matrix forms combine cleanly and consistently with 
-     into compound models of chained observations, and closed loops of observations can be collapsed into single relative 
-    Cleanly integrates multiple observations into an object model
-
-    %Makes assumptions explicitly
-    We have tried to make all of our assumptions explicitly, and have even begun to express them as covariance forms.
-    For example, to assess the stability of the object locator, we set the observation allocator to create a new object for each observation and assumed the object was at ground level.  This assumption was in the same covariance model format as any other observation in the system; this time, a singular matrix defining an infinite plane at zero altitude.
-
-    At the moment, the observation models do not account for angular uncertainties at all.  In particular this creates problems with pitch and roll compensation for the body and gimbal of the copter.
-    %The uncertainty in the rotation of the body of the copter is quite well known by the flight computer, but the time of arrival of the messages encoding pose has some uncertainty.  Along with the high angular velocities from the aggressive control loops, this temporal uncertainty can introduce significant angular uncertainty.
-    With the hyperbolic distributions and angular uncertainty unresolved, the camera data is assumed to have a columnar uncertainty distribution which is clearly false. 
-
-    %Consistent treatment of rotational uncertainties between coordinate systems would be best represented by chains of relative uncertainties in a graph traversal type SLAM system.  In our case, this would allow the lidar and the camera to have a small relative angular uncertainty between them from by merit of being mounted on the same gimbal.
-
-    %XXX shift this to object tracker method
-    %GPS drift has been deliberately assumed to be negligible, with its effects compensated by assuming a high velocity uncertainty on all detected objects.  This way, the system will operate based on effectively DGPS resolution which is the case on all current chase-cam implementations anyway.
-
-    The assumption that the statistics of measurement follow a Gaussian distribution requires that the measurements be unbiased.  For the angular measurements, this introduces stringent requirements for calibration which have not yet been met satisfactorially.  In particular, the servo driven camera gimbal is the single greatest source of error, being mechanically fragile and in need of frequent repair and recalibration, and also seeming to have its zero position drift between every flight.
-
-    The Gaussian statistics is also not capable of describing complex distributions.  Some of the best examples of advanced uncertainty treatment come out of high energy physics.  In many cases, the uncertainty distributions are encoded in a rastered probability density function, or a Fourier series with effectively unbounded order.  Such advanced treatment is undoubtedly beyond the computing capacity of commodity UAVs, but a middle ground of complexity can probably be found by mixing the above Gaussian treatment with some of the statistical weighting features of Kalman style models that also solve for sensor biases.
-
-        %XXX (image: arbitrary geometry Uncertainty Images from SoggyDog)
-
-    Handling the velocity of external objects is not quite usable yet, though the code base does contain most of the requisite functions.  The code that extrapolates object object position based on velocity has been largely disabled, pending live tests of the more advanced observation allocation algorithms.  Until the objects' positions are being updated and adjusted live, there will be no data to infer velocity from, so the velocity handlers will simply be place-holders to maintain the size of the positional uncertainty of the objects.
-
-
-  \subsection{Final Conclusions}
-    We have greatly improved the capabilities of the UWA autonomous hexacopter platform, and have brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes.
-    We have also demonstrated that low-power single board computers can perform live computer vision processes and rudimentary SLAM processes with uncertainty based reasoning to track and follow moving objects.
-    Our Computer-Vision-Only routines are by no means as robust as radio links and differential GPS, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn GPS beacon.
-    Our Object tracker has been demonstrated with a variety of navigation loops, some of which are not GPS dependent.  In commodity chase-cams, these control schemes could allow a graceful handover from radio beacon to computer vision in the event of a GPS failure.
+%BUSHIT STATEMENT ABOUT YOUR GIFT TO HUMANITY AND THE BRIGHT FUTURE IT UNVEILS.
 
 
 
 \section{Recommendations}
 
-  The UWA hexacopter platform is beginning to reach a level of hardware maturity where work can be focussed on new algorithms and applications.  Key improvements yet to be made to the platform mainly relate to the gimbal and camera.
+  The UWA hexacopter platform is reaching a level of hardware maturity where future work can focus on new algorithms and applications.  Key areas for improvement mainly relate to the gimbal and camera.
 
-  The gimbal can be greatly improved by simply removing the gimbal entirely in favour of a fixed camera mount, or swapping the existing servo driven gimbal out for a Brushless DC motor driven gimbal for accurate mechanical image stabilisation.  The camera could benefit from a wider angle lens, however, the narrow field of view did prompt us to find a sound solution to tracking an object beyond the frame boundary.
+  The gimbal can removed entirely in favour of a fixed camera mount, or replaced by a Brushless DC motor driven gimbal for accurate mechanical image stabilisation.  The camera could benefit from a wider angle lens, although the narrow field of view did prompt us to find a sound solution for tracking an object beyond the frame boundary.
 
-  As discussed in section\ref{sec:hyperbolicCase}, the uncertainty analyses are incomplete.
+  As discussed in section \ref{sec:hyperbolicCase}, the uncertainty analyses are incomplete.
   Without solutions to the hyperbolic uncertainty case or rotational transforms, the object tracker will have somewhat unpredictable accuracy.  However, the system does function and can still benefit from case-specific functions to generate camera angles to suit artistic direction.
 
   Further exploration of the hyperbolic case and singular matrices would permit the use of Kalman style path prediction and improve the tracking stability.
   Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this landmark velocity can be extended to a form consistent with a Kalman style motion filter for the each visible landmark.
 
   % SIFT algorithm
-  A problem addressed in section\ref{sec:objectAllocation} is that the objects detected by colour thresholding have a non-zero size which goes against the assumptions implicit in the statistical treatment of the observations.  Using an algorithm like SIFT would track multiple points on any given object, and provide nearly unique visual identifiers for allocating observations to individual objects.  While this would eliminate a small sorting routine in the object allocator, the overheads of SIFT may well require a larger computing budget.
+  A problem addressed in section \ref{sec:objectAllocation} is that the objects detected by colour thresholding have a non-zero size which goes against the assumptions implicit in the statistical treatment of the observations.  An algorithm like SIFT would track multiple points on any given object, and provide nearly unique visual identifiers for allocating observations to individual objects.  While this would eliminate a small sorting routine in the object allocator, the overheads of SIFT may well require a larger computing budget.
 
   %Optical Flow
   Optical Flow is an extremely interesting avenue of research for small UAVs because the high compute-cost can be handled by dedicated silicon like an FPGA.  Coupled with a covariance uncertainty analysis, Optical flow was able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.  
