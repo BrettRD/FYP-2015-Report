@@ -141,58 +141,58 @@
     %XXX unapologetically copied from proposal doc, needs updating and expanding
     \subsection{Motivation}
 
-      A number of Commercial Micro UAVs are beginning to advertise the ability to act as an autonomous chase-cam \cite{Lily} \cite{AirDog}.  Almost all of these systems rely on a tracking device on the user, and many navigate entirely by GPS.  While the performance of GPS is improving, the performance of a chase-cam will be limited to the update rate and fix accuracy of the beacon and drone GPS modules.  It also requires a lock to be achieved in both devices before tracking can commence.
+      A number of Commercial Micro UAVs are beginning to advertise the ability to act as an autonomous chase-cam \cite{Lily} \cite{AirDog}.  Almost all of these systems rely on a tracking device on the user, and many navigate entirely by GPS.  While the performance of GPS is improving, the performance of a chase-cam will be limited to the update rate and fix accuracy of the beacon and drone GPS modules.  It also requires a GPS lock and radio link to be achieved and maintained in both devices for the system to function at all.
 
-      The power distribution and plant monitoring sectors have recently been taking on small fleets of drones to perform routine inspection of remote, hazardous or otherwise difficult locations \cite{RopeAccess}.  Many of these applications are reasonably repetitive and well defined enough to fully automate, but cannot be navigated by GPS alone due to the poor repeatability of the GPS system.
+      The power distribution and plant monitoring sectors have recently been taking on small fleets of drones to perform routine inspection of remote, hazardous or otherwise difficult locations \cite{RopeAccess}.  Many of the tasks are reasonably repetitive and well defined enough to fully automate, but cannot be navigated by GPS alone due to the poor repeatability resulting from GPS signal drift.
       During this project, we were approached by a mining safety startup interested in using UAVs for routine site inspections.
 
       The UAVs we are targeting operate with small payloads, must react quickly to changes in the environment, and frequently feature camera systems.
-      Despite falling costs of hobby and toy grade multirotor systems, Collision avoidance, Object tracking,   mapping and inspection are not well catered for in the current market of UAVs.
-      Part of the problem is that very few sensors are of the appropriate scale, or mass for low cost UAVs.
-      Ground based vehicles have an advantage that a 1D sensor need only be swept in one axis to search for obstacles, but a UAV must collect data filling a volume ahead of it. About the only form of sensor capable of doing this is a 3D laser scanner which is a high-precision, high-cost, high-mass device.
-      A simple camera collects data from an appropriately large volume at high enough speeds to navigate a multirotor, but the data is often difficult or computationally expensive to interpret.
+      Despite falling costs of hobby and toy grade multirotor systems, Collision avoidance, Object tracking, mapping and inspection are not well catered for in the current UAV market.
+      Very few sensors are of the appropriate scale, or mass for low cost UAVs.
+      Ground based vehicles have an advantage in that a 1D sensor need only be swept in one axis to search for obstacles, whereas a UAV must collect data filling a volume ahead of it. About the only form of sensor capable of doing this is a 3D laser scanner which is a high-precision, high-cost, high-mass device.
+      A simple camera collects data on at least two axes at high enough speeds to navigate a multirotor, but the data is often difficult or computationally expensive to interpret.
 
-      With environmental data collected by an efficient computer-vision routine, the current generation of multi-rotor devices would be able to interact in a human environment.
+      With environmental data collected by an efficient computer-vision routine, the current generation of multi-rotor devices would be able to interact with a human environment.
 
-      Computer vision assisted control routines would permit common low cost UAVs to better frame extreme sport chase-cam film reels, automatically avoid obstacles, and stabilise GPS variances in remotely operated inspection tasks.
+      Computer Vision assisted control routines would permit common low cost UAVs to better frame extreme sport chase-cam film reels, automatically avoid obstacles, and stabilise GPS variances in remotely operated inspection tasks.
 
-      In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection.
+      In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection applications.
 
-      Much of the technology related to multi-copters is applicable to most other forms of UAV.  The vast array of applications micro UAVs have found suggests this work may find use in Agriculture, mapping, targeted crop dusting, Cinematography, extreme-sport photography, Data collection, remote observation and inspection and hazard and environmental monitoring.
+      Much of the technology related to multi-copters is applicable to most other forms of UAV.  The vast array of tasks micro UAVs have already been applied to suggests our work may find use in Agriculture, mapping, targeted crop dusting, Cinematography, extreme-sport photography, Data collection, remote observation and inspection, and hazard and environmental monitoring.
         %Check the grammar here
     \subsection{Related Work}
       \subsubsection{Optical Search}
-        Search and Rescue is a field that is extremely appropriate to automation due to the difficulty in mobilising teams in remote, harsh or dangerous conditions.  A micro UAV can be deployed quickly and commence the search operation before boots can be placed on the ground.
-        The UAV Outback Challenge \cite{OutbackChallenge} is a regular competition to perform various search and rescue missions autonomously.  The performance criteria are deliberately set very high, and the competition frequently goes uncompleted.  
-        In 2012, CanberraUAV \cite{canberrauav}, a UAV development team from Canberra completed the search aspect of the competition.
+        Search and Rescue lend themselves to automation due to the difficulty in mobilising teams in remote, harsh or dangerous conditions.  A micro UAV can be deployed quickly and commence the search operation before boots can be placed on the ground.
+        The UAV Outback Challenge \cite{OutbackChallenge} is a regular competition to perform various search and rescue missions.  The performance demands are deliberately set very high, and the competition frequently goes uncompleted.  
+        In 2012 CanberraUAV \cite{canberrauav}, a UAV development team from Canberra completed the search aspect of the competition.
         After trying a number of image recognition algorithms, the search algorithm that they flew with simply looked for the blue of the jeans of Outback Joe \cite{tridge}. This was sufficient to locate the target in a 4x6 km area.  This goes to show that even a minimally complex routine can be effectively applied in appropriate conditions.
 
       \subsubsection{Terrain Estimation via Optical Flow Methods}
-        Adding sensors to allow the copter to understand its environment is a surprisingly difficult task.  Conventional contact methods operate at ranges far too close for UAVs, ultrasonics are buffeted by down-wash and most depth sensors are either too heavy or suffer under intense light.
-        In terms of simplicity of algorithms, biomimicry has turned up some surprising results.  In 2004, a French research group applied a number of optical flow algorithms to the navigation of a small helicopter inspired by insect vision \cite{InsectFlowMethods}.  The computer vision routines were used to inform the navigation loops, following the middle of urban tunnels and reducing speed in dense clutter, without necessarily computing the distance to the obstacles.  These routines were relatively expensive in terms of computational power, but extremely simple and parallelizeable.
+        Adding sensors to allow the copter to understand its environment is a surprisingly difficult task.  Conventional contact methods operate at ranges far too close for UAVs. Ultrasonics are buffeted by down-wash and most depth sensors are either too heavy or suffer under intense light.
+        In terms of simplicity of algorithms, biomimicry has turned up some surprising results.  In 2004, a French research group applied a number of optical flow algorithms inspired by insect vision to the navigation of a small helicopter \cite{InsectFlowMethods}.  The computer vision routines were used to inform the navigation loops, following the middle of urban tunnels and reducing speed in dense clutter, without necessarily computing the distance to the obstacles.  These routines were relatively expensive in terms of computational power, but extremely simple and parallelizeable.
 
       \subsubsection{Position Estimation using Stereoscopic Methods}
-        Any measurement will have an associated uncertainty, extracting the most information out of a collection of measurements rarely involves taking the most accurate measurements.  It is possible to estimate the position of an object or feature using multiple images separated in either space or time, but making effective use the information requires an understanding of how the uncertainties behave.  Error Modeling in Stereo Navigation \cite{stereoUnc} investigates a number of routines to estimate the position of a vehicle by tracking visible land-marks in a stereoscopic system, and notes the interaction between the geometry of the uncertainties, and the stability of the result.
+        Any measurement will have an associated uncertainty. Extracting the most information out of a collection of measurements rarely requires taking the most accurate measurements.  It is possible to estimate the position of an object or feature using multiple images separated in either space or time, but making effective use of the information requires an understanding of how the uncertainties behave.  Error Modelling in Stereo Navigation \cite{stereoUnc} utilizes a number of routines to estimate the position of a vehicle by tracking visible land-marks in a stereoscopic system; and notes the interaction between the geometry of the uncertainties, and the stability of the result.
 
       \subsubsection{Altitude Estimation and Odometry by optical flow}
-        Elementary methods are still interesting for the sake of biomimicry, and indeed, a 20 element photo-array was demonstrated sufficient to control the altitude of an aircraft \cite{optoAlt}, coupling the altitude to the velocity.
-        Dedicated, low resolution optical flow sensors have become exceedingly cheap since the market saturation of the optical mouse, and many commodity flight computers already include doppler information from GPS modules. 
-        Combining this data allows the UAV to estimate the distance to the terrain, \cite{RemTerrain}.  These commodity sensors typically do not include circuitry for computing rotation, but given the cost of the sensors, that limitation can be overcome using two sensors \cite{FlowRot}.
-        With the availability of these parts, a number of UAV systems such as ArduPilot already include support for these devices in their code-base \cite{ArduFlow}.
-        This support also covers pitch and roll compensation and position stabilisation using odometetry.
+        Elementary methods are still interesting for the sake of biomimicry.  A 20 element photo-array was demonstrated to provide sufficient resolution to control the altitude of an aircraft \cite{optoAlt}, coupling the altitude to the velocity.
+        Dedicated, low resolution optical flow sensors have become exceedingly cheap since the market-saturation of the optical mouse; and many commodity flight computers already include doppler information from GPS modules. 
+        Combining these elements allows a UAV to estimate the distance to the terrain, \cite{RemTerrain}.  These commodity sensors typically do not include circuitry for computing rotation, but given the cost of the sensors, that limitation can be overcome combining two sensors \cite{FlowRot}.
+        A number of UAV systems such as ArduPilot already include support for these devices in their code-base \cite{ArduFlow}.
+        This support also covers pitch and roll compensation and position stabilisation using optical odometry.
 
       %\subsubsection{Uncertain Geometry}
 
     \subsection{Project History}
 
       \subsubsection{2013}
-        The 2013 team, O'Connor \cite{OConnor} and Venables \cite{Venables} established the project with the purchase of a DJI flame-wheel F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted into an autonomous platform with the addition of a Raspberry Pi single-board computer (RPi) and a circuit to switch the control channels from the radio receiver to the RPi GPIO outputs.
+        The 2013 team of O'Connor \cite{OConnor} and Venables \cite{Venables} established the UAV research project with the purchase of a DJI ``flame-wheel'' F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted into an autonomous platform with the addition of a Raspberry Pi single-board computer (RPi) and a circuit to switch the control channels from the radio receiver to the RPi GPIO outputs.
         The NAZA-lite at this time did not feature telemetry outputs or way-point inputs, but it was able to loiter in a stiff wind using a GPS fix.
-        This team gathered location information for the RPi using a Qstarz GPS unit, and bearing information using an X-sens IMU.  The sensor duplication did not exceed the maximum payload capacity of the platform, but it did suffer a short flight-time.
+        This team gathered location information for the RPi using a Qstarz GPS unit, and bearing information using an X-sens IMU.  The weight of the sensor duplication did not exceed the maximum payload capacity of the platform, but it did compromise flight-time.
         Under direct control from the RPi, the drone was able to execute basic way-point navigation.
       \subsubsection{2014}
 
-        The 2014 team, Baxter \cite{Baxter}, Mazur \cite{Mazur} and Targhagh \cite{Targhagh} continued the project adding an internet accessible web UI to control the various autonomous features of the platform, displaying the flight-path of the copter and a live feed of the camera.
+        The 2014 team of Baxter \cite{Baxter}, Mazur \cite{Mazur} and Targhagh \cite{Targhagh} added an internet accessible web UI to control the various autonomous features of the original platform, displaying the flight-path of the copter and a live feed from the camera.
         The navigation routines were improved and extended to permit operation in the absence of reliable heading information, and the computer vision routines were extended.
 
   \section{Platform}
@@ -204,11 +204,11 @@
 
 Control Handover
 Sensor Duplication
-New Flight
+New Flight Controller
 Telemetry
 Simulation Environment
-Web
-
+Web UI
+      We reviewed the previous team's hardware configuration and prepared a report outlining the weaknesses and proposing a new approach.
     
       The flight hardware is a major component of the control loops in the object tracker, and the performance of these loops cannot be ignored.
       For a multi-copter to move forward, it must control the speed of the props to create a pitch angular acceleration. The pitch angle is stabilised to generate a forward acceleration which is used to control position.
@@ -236,8 +236,7 @@ Web
        server was a Raspberry Pi model B+, and
 
       %>objective of the platform (with history)
-      The NAZA and RC emulation for autonomous flight did not fit together well. The NAZA lite is designed as an entry level free-flight controller and does not expose any interfaces for telemetry or data acquisition.  As such, the previous teams had to duplicate the GPS and IMU sensors to make such information available to the server's algorithms.
-      
+      The NAZA and RC emulation for autonomous flight did not fit together well. The NAZA lite is designed as an entry level free-flight controller and does not expose any interfaces for telemetry or data acquisition.  As a result, the previous teams had to duplicate the GPS and IMU sensors to make such information available to the server's algorithms.
 
       The NAZA Lite also does not feature waypoint navigation features, or secondary command channels so the previous teams used a relay board to physically switch the control inputs from the RC receiver to the server, and implemented their own flight control algorithms on the server.
       This breaks the assumption that the flight controller will maintain flight during a server crash.  Indeed, we were told that server lock-ups frequently caused the craft to power-dive.
@@ -256,7 +255,7 @@ Web
   \subsection{Results and Dicussion}
     %(fitness for purpose etc)
 
-    The server has been upgraded to a Raspberry Pi V2 single board computer, which we consider to be a computationally starved platform.  At the time of writing, the Raspberry Pi V2 has less computational power than a smartphone in the \$200 price bracket.
+    The server has been upgraded to a Raspberry Pi V2 single board computer, which we still regard as a computationally starved platform.  At the time of writing, the Raspberry Pi V2 has less computational power than a smartphone in the \$200 price bracket.
     \subsubsection{Control Handover}
       The physical switch of control from the user to the server, and the ongoing development of a control loop meant that RC switch was never configured to surrender the throttle channel, and the server was left without altitude control.  This meant that the server had continuous perturbations from the user who remained responsible for maintaining a fixed altitude by sight alone.
 
@@ -274,12 +273,11 @@ Web
 
       The server did not have access to an estimate of remaining flight time, and the user could not retrieve logs in the event of a crash.
 
-      Waypoints were handled on the server despite the NAZA featuring GPS assisted loiter behaviour, and a reliable return-to-launch failsafe feature.  In general, control loops should be as short as possible, and routing them through an entirely separate processor is clearly an unnecessarily long loop.
-
+      Waypoints were handled on the server despite the NAZA featuring GPS assisted loiter behaviour, and a reliable return-to-launch failsafe feature.  In general, control loops should be as short as possible, and routing them through an entirely separate processor is clearly suboptimal.
+%an unnecessarily long loop
     \subsubsection{New Flight Controller}
-      After spending some time with the hardware configuration of the previous teams, we prepared a report outlining the weaknesses and proposing a change.
       We swapped the NAZA flight controller out for a 3DR Pixhawk running the Ardupilot 3.3 firmware.  This gave us Waypoints, altitude control, failsafes, telemetry, and a GPS-only driven follow-me mode out of the box.
-      The open and configurable flight controller with built-in autonomous and hybrid modes, meant that we could fully surrender control to the autonomous platform, including altitude control.  The built-in mode change behaviours meant that we could relinquish and resume manual control at the remote, or activate fail-safes just as reliably as with the NAZA.
+      The open and configurable flight controller with built-in autonomous and hybrid modes allowed us to fully surrender control to the autonomous platform, including altitude control.  The built-in mode change behaviours meant that we could relinquish and resume manual control at the remote, or activate fail-safes just as reliably as with the NAZA.
       
     \subsubsection{Telemetry}
       The telemetry link supports the MAVlink protocol, which defines various commands from interrogating the status to setting waypoints, or even setting the instantaneous velocity vector.
