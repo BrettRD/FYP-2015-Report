@@ -97,6 +97,7 @@
 \newacronym{uav}{UAV}{Unmanned Aerial Vehicle}
 \newacronym{gps}{GPS}{Global Positioning System}
 \newacronym{imu}{IMU}{Inertial Measurement Unit}
+\newacronym{fpga}{FPGA}{Field Programmable Gate Array}
 \newacronym{dgps}{DGPS}{Differential \gls{gps}}
 \newacronym{gpio}{GPIO}{General Purpose Input Ouput}
 \newacronym{ui}{UI}{User Interface}
@@ -108,8 +109,9 @@
 \newacronym{hud}{HUD}{Heads Up Display}
 \newacronym{rtl}{RTL}{Return to Launch}
 \newacronym{pid}{PID}{Proportional, Integral, Derivative}
+\newacronym{pdf}{PDF}{Probability Density Function}
+\newacronym{ros}{ROS}{Robot Operating System}
 
-%\newacronym{uavs}{UAVs}{Unmanned Aerial Vehicles}
 
 
 %unused refs
@@ -133,11 +135,6 @@
   \tableofcontents
   \pagebreak
   \section{Introduction}
-  %aims
-    %PENDING THE APPLICATION OF SENSE
-    
-    %XXX Background, Aims
-    %route map for project
     Recent developments in power and control electronics has allowed small, consumer level \glspl{uav} to lift enough processing capacity to navigate at least partly by computer vision.
     
     \Gls{uwa} hexacopter development programme commenced in 2013. It provides a \gls{uav} platform with which students can develop and test appropriate technologies in a structured format. The hexacopter was initially built by the 2013 project group.
@@ -204,7 +201,7 @@
         Dedicated, low-resolution optical flow sensors have become exceedingly cheap since the market-saturation of the optical mouse; and many commodity flight computers already include doppler information from \gls{gps} modules. 
         Combining these elements allows a \gls{uav} to estimate the distance to the terrain \cite{RemTerrain}.  These commodity sensors typically do not include circuitry for computing rotation, but given the cost of the sensors, that limitation can be overcome combining two sensors \cite{FlowRot}.
         A number of \gls{uav} systems such as ArduPilot already include support for these devices in their code-base \cite{ArduFlow}.
-        This support also covers pitch and roll compensation and position stabilisation using optical odometry.
+        This support also covers pitch and roll compensation and position stabilisation \cite{ArduFlow} \cite{OptoFlowStab}.
 
       %\subsubsection{Uncertain Geometry}
 
@@ -393,7 +390,7 @@
         \end{bmatrix}, k=3
         \end{equation}
         %XXX get the justification for the product straight
-        This form is particularly useful because the normal distribution behaves as a probability density function of prediction, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical normal distributions is also an elliptical normal distribution.  
+        This form is particularly useful because the normal distribution behaves as a \gls{pdf} of prediction, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical normal distributions is also an elliptical normal distribution.  
 %XXX check all the tenses
         In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed-form solution and can be calculated from the inverse covariance matrix directly as follows:
         \begin{equation}
@@ -461,21 +458,21 @@
           Again, the matrix form below does not permit singular matrices as inputs nor outputs, but unpacking it into polynomial form does allow suitable centroids to be chosen.
         \begin{figure}
         \centering
-        \begin{subfigure}{.3\textwidth}
+        \begin{subfigure}{.33\textwidth}
           \centering
-          \includegraphics[width=.8\linewidth]{images/GaussianSum1.png}
+          \includegraphics[width=.9\linewidth]{images/GaussianSum1.png}
           \caption{Object at the Origin}
           \label{fig:vectSumsub1}
         \end{subfigure}%
-        \begin{subfigure}{.3\textwidth}
+        \begin{subfigure}{.33\textwidth}
           \centering
-          \includegraphics[width=.8\linewidth]{images/GaussianSum2.png}
+          \includegraphics[width=.9\linewidth]{images/GaussianSum2.png}
           \caption{Uncertain Displacement}
           \label{fig:vectSumsub2}
         \end{subfigure}
-        \begin{subfigure}{.3\textwidth}
+        \begin{subfigure}{.33\textwidth}
           \centering
-          \includegraphics[width=.8\linewidth]{images/GaussianSum3.png}
+          \includegraphics[width=.9\linewidth]{images/GaussianSum3.png}
           \caption{Final Object Location}
           \label{fig:vectSumsub3}
         \end{subfigure}
@@ -534,34 +531,34 @@
         With a system that allows seamless representations of ellipsoids with singular matrices, it is not much of a stretch to consider ellipsoids represented by matrices with a negative determinant; the uncertainty ellipsoid becomes hyperbolic, expanding to an asymptote with an elliptical conic cross-section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
         A simple hyperbolic form aligned along an axis will have one negative diagonal term, and zeros for all off-diagonal terms.
         It is worth reiterating here that positive numbers represent increasing certainty and zero represents total uncertainty; intersecting an hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
-        This stems from an hyperbolic PDF requiring a normalisation function over its area.  The location of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
+        This stems from an hyperbolic \gls{pdf} requiring a normalisation function over its area; In the simple matrix form, the density increases with the square of the distance from the centre.  The location and size of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
 
-        Given that hyperbolic volume integrates to infinity, a probability density function would be infinitesimal everywhere.  A more useful definition of its behaviour would be that the line along the centre has a density of one (Figure \ref{fig:hyperbolicsub2}), or alternatively, that its cross-section integrates to one (Figure \ref{fig:hyperbolicsub3}).
+        Given that a hyperbolic volume integrates to infinity, this hyperbolic probability density function would be infinitesimal everywhere.  A more useful construction for its behaviour would set the density along its major axis to one (Figure \ref{fig:hyperbolicsub2}), or alternatively, set the integral of the cross-section to one (Figure \ref{fig:hyperbolicsub3}).
         The latter model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
         \begin{figure}
         \centering
         \begin{subfigure}{.33\textwidth}
           \centering
           \includegraphics[width=.9\linewidth]{images/GaussianRay1.png}
-          \caption{Negative Determinant ellipsoid}
+          \caption{Negative Determinant}
           \label{fig:hyperbolicsub1}
         \end{subfigure}%
         \begin{subfigure}{.33\textwidth}
           \centering
           \includegraphics[width=.9\linewidth]{images/GaussianRay3.png}
-          \caption{Normalised Major Axis Density}
+          \caption{Normalised Major Axis}
           \label{fig:hyperbolicsub2}
         \end{subfigure}
         \begin{subfigure}{.33\textwidth}
           \centering
           \includegraphics[width=.9\linewidth]{images/GaussianRay2.png}
-          \caption{Normalised Cross Section Integral}
+          \caption{Normalised Cross Section}
           \label{fig:hyperbolicsub3}
         \end{subfigure}
         \caption{An Hyperbolic Distribution with Normalisations}
         \label{fig:hyperbolic}
         \end{figure}
-        With a single image from a camera, the only information collected about the location of an object is that it lies somewhere within a narrow cone of infinite length.  (Ignoring exploitable imperfections in the camera such as focal length)
+        With a single image from a camera, the only information collected about the location of an object is that it lies somewhere within a narrow cone of infinite length, ignoring exploitable imperfections in the camera such as focal length.
         In the case of stereo imaging, the hyperbolic measurements of points in the near field would immediately reduce to localised ellipsoids, while points in the far field would become narrow hyperbolic distributions.
 
         The hyperbolic structure is symmetrical like the ellipse, which suggests probability behind the camera.  With decent image classifiers this is unlikely to be a problem as the final localised object will fall on the intersection of the rays.
@@ -587,71 +584,71 @@
   \subsection{Results and Discussion}
 
     \subsubsection{Simulation Tests}
-      We used the simulator built alongside the arducopter firmware to run our tests.  This simulator is detailed enough to handle the inertial model of the platform and inject noise into the sensors.
+      We used the simulator built alongside the Arducopter firmware to run our tests.  This simulator is detailed enough to handle the inertial model of the platform and inject noise into the sensors.
       This simulator allows us to run our full software stack on any computer with a functioning compiler.
       The object tracking code estimates the location of the objects using data from the camera and flight controller covering the gimbal pose, the roll, pitch and yaw of the copter, and the \gls{gps} location as fused with the accelerometer and gyro data.
 
       Because the the camera cannot resolve range, an assumption model describing the ground was added to the code reducing the columnar vision model to a spot on the ground.
 
-      Using a servo driven gimbal on the real copter we cannot perform mechanical compensation of the pitch and roll without injecting extremely large angular uncertainties.
+      Using a servo-driven gimbal on the real copter we cannot perform mechanical compensation of the pitch and roll without injecting extremely large angular uncertainties.
       The object estimation code compensates for the pitch and roll using matrices representing body rotations under OpenCV.
       This compensation is designed to cleanly counter the non-linear second order signal injection, but with the camera mechanically coupled to a laptop instead of the simulated copter, the loop becomes completely unstable.
 
-      Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator.  Using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter (below the centre-line of the image frame), the copter moves forward, away from the object, turning around as it does so.
+      Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator.  Using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter (below the centre-line of the image frame), the copter moves forward away from the object, turning around as it does so.
 
     \subsubsection{Live Tests}
       The copter was able to physically follow one object, while tracking multiple others.  Unfortunately, problems in maintaining calibration on multiple systems, particularly the camera gimbal, severely limited the opportunities for testing edge cases in an end-to-end system.
 
       \subsubsubsection{Navigation System}
-        The change from \gls{rc} inputs to Velocity vector commands for the sake of control linearity resulted in much more predictable and consistent behaviour without significant loss of control bandwidth.
+        The change from \gls{rc} inputs to velocity vector commands for the sake of control linearity resulted in much more predictable and consistent behaviour without significant loss of control bandwidth.
         To reduce the length of the feedback loop, we used the guided waypoint functions and absolute yaw commands in Arducopter 3.2 onward.  This change drastically improved the flight stability of the copter, but significantly reduced the control bandwidth.  The waypoint updates appeared to be obeyed at several Hertz, despite a new request being sent every frame (30Hz).
         The behaviour of our final navigation system was refreshingly predictable and by far the best choice for future development despite the loss of bandwidth.
       
       \subsubsubsection{Object Localisation}
         The observation allocation routine selects the most likely object an observation could refer to. If the associated probability is below some threshold, it instead creates a new object.
-        In one of the tests, velocity predictions were enabled along with object creation with an inverted axis on the inertial compensation matrices. This system quickly generated more than seventy unique objects in memory and ran velocity prediction on all of them live. The algorithm's CPU usage never approached the requirements for the computer vision despite running an unoptimised sorting and allocation routine, and uncertainty analysis.
+        In one of the tests, velocity predictions were enabled along with object creation with an inverted axis on the inertial compensation matrices. This system quickly generated more than seventy unique objects in memory and ran velocity prediction on all of them live. The algorithm's processor usage never approached the requirements for the computer vision despite running an unoptimised sorting and allocation routine, and uncertainty analysis.
 %XXX make all testing past tense
       \subsubsubsection{Object Detection}
         %Basic colour matching limitations, false positives
         The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this resulted in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
 
-        Many more advanced object detection processes became available on our platform over the course of the programme thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
+        Many more advanced object detection processes became available on our platform over the course of the programme thanks to the work of Tan \cite{Tan}, but these were in active development throughout this project and offered no consistent foundation to test upon.
 
       \subsubsubsection{Bench Marks}
-        As mentioned earlier, the Arducopter firmwares offer a \gls{gps} driven ``follow me'' mode using the Android application ``Tower'' \cite{3dr-tower}.
+        As mentioned earlier, the Arducopter firmwares offer a \gls{gps} driven `follow me' mode using the Android application ``Tower'' \cite{3dr-tower}.
         The \gls{gps} tether mode was very stable and eminently usable in real circumstances.  It suffered from worse update bandwidth issues than our autonomous modes, and frequently allowed the beacon to leave the frame.  We can presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
 
-        The \gls{gps} chase system did have some serious flaws though.  In the very poor \gls{gps} environment of the Great Court on the \gls{uwa} campus, the Ublox Neo7m radio was deviating more than 500m every couple of seconds.  With no operator assistance, the loss of \gls{gps} led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple \gls{gps} modules in redundant fashion.  So we were able to combat the urban canyon environment with radio diversity.
+        The \gls{gps} chase system did have some serious flaws though.  In the very poor \gls{gps} environment of the Great Court on the \gls{uwa} campus, the Ublox Neo7m radio was deviating more than 500m every couple of seconds.  With no operator assistance, the loss of \gls{gps} led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple \gls{gps} modules in redundant fashion, so we were able to combat the urban canyon environment with radio diversity.
 
     \subsection{Extensions}
 
       \subsubsection{Atomic Graph-Traversal SLAM}
-
+%XXX incomplete
       \label{sec:SLAMproposal}
         The following is a speculative description of what is potentially an entirely new \gls{slam} process using the uncertainty analysis outlined in Section \ref{sec:ObsAndUnc}.
 
-        Full-state covariance \gls{slam} has demonstrated some truly incredible results, but is limited in its applications by the large computing requirements.  It has also been criticised for the way it treats non-linearity in the observations is makes between landmarks.
-
+        Full-state covariance \gls{slam} has demonstrated some truly incredible results, but is limited in its applications by the large computing requirements.  It has also been criticised for the way it treats non-linearity in the observations makes between landmarks.
 
         Storing a motion history of the objects would facilitate the generation of a time-dependent network of estimated locations and relative measurements.
         Here, the nodes represent the instantaneous locations of the objects, linked forward in time by velocity estimates, and linked in space by relative distance measurements.  Assumptions can be added to this mix in the same form as the object locations, time evolution, and relative measurements.
 
         Building a single covariance matrix for the entire state-space generates extremely large matrices very quickly, and every algorithm that implements full-state covariance pays attention to pruning the map in some way\cite{monoslam} \cite{airshipSLAM}.
         
-        A live process need only deal with the instantaneous positions of the robot and a small collection of landmarks. This sub-set of landmarks can be dealt with in a full-state covariance matrix \cite{monoslam}.  
+        A live process need only deal with the instantaneous positions of the robot and a small collection of landmarks. This sub-set of landmarks can be dealt with in a full-state covariance matrix \cite{monoslam}.
         
-        The lesser ``full-state'' covariance matrix can be generated by collapsing dependent chains of observations down using the vector sum, and combining network loops with the intersection into landmarks.  The ``full state'' covariance matrix can be chosen from the resulting landmarks that best reduce absolute navigation uncertainty.  Further observations are still generated as atomic structures and added to the network, then used to refine the larger covariance matrix by the graph traversal algorithm.  
+        The lesser `full-state' covariance matrix can be generated by collapsing dependent chains of observations down using the vector sum, and combining network loops with the intersection into landmarks.  The `full-state' covariance matrix can be populated by choosing the resulting landmarks that best reduce absolute navigation uncertainty for the copter's current and planned locations.  Further observations are still generated as atomic, relative observation structures and added to the network.  These additional observations are then used to refine or regenerate the lesser `full-state' covariance matrix by the graph traversal algorithm.
+        This graph-traversal algorithm can operate less-than-live \cite{SLAMgraph}.
 
-        but the landmark uncertainties can be further refined by a less-than-live by a graph traversal \cite{SLAMgraph}.
+        By storing the observations as an undirected graph of relative links, initialising the algorithm is as trivial as creating an assumption in the form of an artificial survey marker at boot.
+        The assumption can be later removed and replaced by real survey markers if they exist, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
 
-        %A \gls{slam} process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
-
+        This process still retains sufficient detail to support a bundle adjustment algorithm, optimising for consistency in cycles detected by a spanning tree algorithm \cite{SLAMgraph}.
 
 
 
 \section{Conclusions}
 
-We reviewed, re-designed and re-built the \gls{uwa} autonomous hexacopter; thereby greatly improving its overall capabilities and making it fit-for-purpose as a development platform for autonomous navigational routines. The re-build involved replacement of both the flight controller and the server. The new flight controller provided the following capabilities:
+We reviewed, re-designed and re-built the \gls{uwa} autonomous hexacopter thereby greatly improving its overall capabilities and making it fit-for-purpose as a development platform for autonomous navigational routines. The re-build involved replacement of both the flight controller and the server. The new flight controller provided the following capabilities:
 \begin{itemize}
   \item new gimbal features for the object tracker;
   \item waypoint navigation;
@@ -663,7 +660,10 @@ We reviewed, re-designed and re-built the \gls{uwa} autonomous hexacopter; there
 
 During the project, the flight controller firmware advanced from Arducopter V3.2, through V3.3rc10, to V3.3 stable near the end of the project.
 The enhanced server supported advanced computer vision routines.
-We brought the code-base up to a level where it is feasible to implement rudimentary \gls{slam} processes. We also demonstrated that low-power single board computers can perform live computer vision processes and elements of \gls{slam} processes with uncertainty based reasoning to track and follow moving objects. Our Computer-Vision-Only routines are by no means as robust as radio links and differential \gls{gps}, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn \gls{gps} beacon. Our Object tracker was demonstrated with a variety of navigation loops, some of which were not \gls{gps} dependent. In commodity chase-cams, these control schemes could allow a graceful handover from radio beacon to computer vision in the event of a \gls{gps} failure.
+We brought the code-base up to a level where it is feasible to implement rudimentary \gls{slam} processes.
+We also demonstrated that low-power single board computers can perform live computer vision processes and elements of \gls{slam} processes with uncertainty based reasoning to track and follow moving objects.
+Our computer-vision-only routines are by no means as robust as radio links and differential \gls{gps}, but the use of computer vision allows aesthetic framing of more than a wrist-worn \gls{gps} beacon.
+Our object tracker was demonstrated with a variety of navigation loops, some of which were not \gls{gps} dependent. In commodity chase-cams, these control schemes could allow a graceful handover from radio beacon to computer vision in the event of a \gls{gps} failure.
 %XXX copied in the intro
 
 %BUSHIT STATEMENT ABOUT YOUR GIFT TO HUMANITY AND THE BRIGHT FUTURE IT UNVEILS.
@@ -676,40 +676,41 @@ This work brings us one step further to allowing \glspl{uav} to interact with an
 
   The \gls{uwa} hexacopter platform is reaching a level of hardware maturity where future work can focus on new algorithms and applications.  Key areas for improvement mainly relate to the gimbal and camera.
 
-  The gimbal can removed entirely in favour of a fixed camera mount, or replaced by a Brushless DC motor driven gimbal for accurate mechanical image stabilisation.  The camera could benefit from a wider angle lens, although the narrow field of view did prompt us to find a sound solution for tracking an object beyond the frame boundary.
+  The servo-driven gimbal is a large source of error and can removed entirely in favour of a fixed camera mount, or replaced by a brushless DC motor driven gimbal for accurate mechanical image stabilisation.  The camera could benefit from a wider angle lens, although the narrow field of view did prompt us to find a sound solution for tracking an object beyond the frame boundary.
 
   As discussed in section \ref{sec:hyperbolicCase}, the uncertainty analyses are incomplete.
   Without solutions to the hyperbolic uncertainty case or rotational transforms, the object tracker will have somewhat unpredictable accuracy.  However, the system does function and can still benefit from case-specific functions to generate camera angles to suit artistic direction.
 
-  Further exploration of the hyperbolic case and singular matrices would permit the use of Kalman style path prediction and improve the tracking stability.
-  Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this landmark velocity can be extended to a form consistent with a Kalman style motion filter for the each visible landmark.
+  Further exploration of the hyperbolic case and singular matrices would create support for rotational uncertainties and greatly improve the tracking stability.
+  Using a vector difference of positions to estimate the velocity, models of objects can be evolved over time and updated with additional measurements.  With additional statistical analysis, this landmark velocity can be extended to a form consistent with a Kalman-style motion filter for the each visible landmark.
 
   % \gls{sift} algorithm
   A problem addressed in section \ref{sec:objectAllocation} is that the objects detected by colour thresholding have a non-zero size which goes against the assumptions implicit in the statistical treatment of the observations.  An algorithm like \gls{sift} would track multiple points on any given object, and provide nearly unique visual identifiers for allocating observations to individual objects.  While this would eliminate a small sorting routine in the object allocator, the overheads of \gls{sift} may well require a larger computing budget.
 
   %Optical Flow
-  Optical Flow is an extremely interesting avenue of research for small \glspl{uav} because the high compute-cost can be handled by dedicated silicon like an FPGA.  Coupled with a covariance uncertainty analysis, Optical flow was able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.  
+  Optical Flow is an extremely interesting avenue of research for small \glspl{uav} because the high compute-cost can be handled by dedicated silicon like a \gls{fpga}.  Coupled with a covariance uncertainty analysis, optical-flow is able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.
   
+  %XXX check optical flow
   As it stands, the uncertainty analysis in our implementation does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature when only a correlation between \(\dot{x}\) and \(z\) is known.  For sensors that cannot resolve velocity, the additional matrix elements are just zeroes.
 
-  Implementing Optical Flow with the uncertain geometry methods extended to \(6\times6\) position and velocity covariances is very straightforward. The probability distributions of optical flow have described in the literature \cite{FlowUncert}, and from there, the application is exactly the same as any other camera data; set depth-certainty to zero and rotate into place. 
+  Implementing Optical Flow with the uncertain geometry methods extended to \(6\times6\) position and velocity covariances is very straightforward. The probability distributions of optical flow are described in the literature \cite{FlowUncert}, and from there, the application is exactly the same as any other camera data; set depth-certainty to zero and rotate into place. 
 
 
     %XXX See control system theory, state vectors and time-step matrices.
 
 
   %Use ROS
-  The current structure of the code base is sound, but makes it difficult to run processes like object tracking and object avoidance simultaneously.  This situation could be improved by using a subscriber model between different processes, such as that used by ROS.
+  The current structure of the code base is sound, but makes it difficult to run processes like object tracking and object avoidance simultaneously.  This situation could be improved by using a subscriber model between different processes, such as that used by \gls{ros}.
 
 
 
 
-  \pagebreak
+
 
 
 %Referencing
 %---------------------------------------------------------
-%\pagebreak
+\pagebreak
 \renewcommand{\refname}{References}
 \addcontentsline{toc}{section}{References}
 \bibliography{references/refs}
@@ -718,7 +719,11 @@ This work brings us one step further to allowing \glspl{uav} to interact with an
 %\printbibliography
 
 %---------------------------------------------------------
+\pagebreak
+
+\addcontentsline{toc}{section}{Glossary}
 \printglossaries
+
 
 \begin{appendices}
 
