@@ -308,41 +308,47 @@ Web UI
   \subsection{Method}
 
     \subsubsection{Position estimation}
-      After experimenting with the rudimentary PID loop, we moved on to basic triangulation methods to estimate the location of the object with the assumption that it was on the ground.  We were estimating the height based on the GPS altitude data streaming from the NAZA GPS, but without access to the NAZA's internal barometer, the uncertainty in height caused the navigation loop stability to vary significantly minute by minute.
-      After the upgrade to the Pixhawk, we had access to the data from the Extended Kalman Filter in the flight controller.  We had also made significant changes to the way the flight controller was guided by the server, and this prompted a near total re-write of the object tracking code-base.
+      %XXX existing or new PID system, make it clear that that changed
+      After experimenting with the rudimentary PID loop, we moved on to basic triangulation methods to estimate the location of an object with the assumption that it was on the ground.  We estimated the height based on the GPS altitude data streaming from the NAZA GPS; but without access to the NAZA's internal barometer, the uncertainty in height caused the navigation loop stability to vary significantly minute by minute.
+      After upgrading to the Pixhawk, we had access to the data from the Extended Kalman Filter in the flight controller.  We also made significant changes to the way the flight controller was guided by the server, and this prompted a near total re-write of the object tracking code-base.
 
     \subsubsection{Desired relative pose}
       Once the object is located in 3D space, the copter will calculate a vantage point from which to view it.
       This vantage point could include information regarding the terrain, the size and trajectory of the object, the field of view of the camera, locations of light sources etc.  This is the point at which cinematographic style is included in the chain.
 
-      The pose used in testing selects the nearest point at the copter's current altitude, on a cone of a given slope radiating upwards from the object.
-      The uncertainty analysis (discussed in section \ref{sec:UncertaintyAnalysis}) is available to this algorithm, and could be used in a SLAM system to select a pose that will most efficiently reduce the uncertainty of a given landmark's location.  Computation of uncertainty minimising poses can lend an observation priority metric to systems such as \cite{TrilatUnderwater}.
+      The camera position used in testing selects the nearest point at the copter's current altitude, on a cone of a given slope radiating upwards from the object.
+      The uncertainty analysis (discussed in section \ref{sec:UncertaintyAnalysis}) is available to this algorithm, and could be used in a SLAM system to select a pose that will most efficiently reduce the uncertainty of a given landmark's location.  Computation of uncertainty-minimising poses can lend an observation priority metric to systems such as those used in cooperative robotics \cite{TrilatUnderwater}.
 
     \subsubsection{Motion Control}
       As of version 3.3, The Arducopter code-base has support for arbitrary velocity vectors.  The first iteration of the motion control algorithm mirrored the old RC emulation code base and transmitted a velocity vector in body coordinates to the flight controller and closed the motion loop through the automation server.  The long feedback loops had problems with delays and required detailed tuning.
-      The Pixhawk already has advanced automatic tuning routines and performs very well as a standalone autonomous platform.  To further reduce feature duplication, the motion control code was replaced by a guided-mode waypoint; the automation server simply computes and transmits the desired vantage points and yaw values to the Pixhawk.
+      The Pixhawk already has advanced automatic tuning routines and performs very well as a standalone autonomous platform.
+      To further reduce feature duplication, we replaced the motion control code with a guided-mode waypoint.  The automation server then simply computes and transmits the desired vantage points and yaw values to the Pixhawk.
 
       The coming Arducopter 3.4 release is set to include more advanced control schemes and support for GPS-independent autonomous features.  All of the motion control processes were kept in the code-base for comparisons and future work, particularly to facilitate a fully GPS-independent acceleration vector control scheme.
 
       The command structure on the Pixhawk supports dead-channel detection and can execute failsafe behaviours on loss of link.  Even if our motion control system were to use an Acceleration vector output, a loss of link or server crash would engage the appropriate fail-safe, and the copter would continue flying.
 
     \subsubsection{Structure from image}
-      Resolving structure from image is a field unto itself.  In general, the computational load of modelling the environment in three dimensions live is beyond supercomputing clusters that would fit in the mass restrictions of most multi-rotors.  However, Simultaneous Localisation and Mapping (SLAM) systems optimise components of this field into a vast array of algorithms of varying computational power requirements.
-      One of the critical features of a modern SLAM systems is an acknowledgement that every measurement comes with some uncertainty. 
-      In many cases, the treatment of uncertainty can be very simple, carrying a one-dimensional confidence value, to the very complex, where every aspect of the measurement is recorded for post-processing where non-linear couplings can be accounted for.
+      Resolving structure from image is a field unto itself.  In general, the computational load of modelling the environment in three dimensions live is beyond the capabilities of supercomputing clusters that would fit in the mass restrictions of most multi-rotors.  However, Simultaneous Localisation and Mapping (SLAM) systems optimise components of this field into a vast array of algorithms of varying computational power requirements.
+      One of the critical features of modern SLAM systems is an acknowledgement that every measurement comes with some uncertainty. 
+      The treatment of uncertainty can be very simple, carrying a one-dimensional confidence value; through to very complex, where every aspect of the measurement is recorded for post-processing where non-linear couplings can be accounted for.
 
       Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods by using a less-than-live graph traversal process.
 
       %XXX get a reference
     \subsubsection{Observations and uncertainties}
 
+    %Make it clear how much of this approach you developed yourself.
+    %Maybe also mention your work in 'Related Work'
       \subsubsubsection{Observation to Object Allocation}
         \label{sec:objectAllocation}
-        With many observations streaming from the camera simultaneously, the algorithm must decide which observation relates to which object in memory.  We developed and tested several algorithms to differentiate objects and refine uncertainties
-        Most of these suffered from the objects' uncertainties falling so low that the probability of intersection between observation and model fell below reasonable thresholds and new object models were generated.  Part of the problem behind this is that our object detection is still based on colour thresholding; this generates objects of significant size which goes against the assumption implicit in the normal distributions.
+        With many observations streaming from the camera simultaneously, the algorithm must decide which observation relates to which object in memory.
 
-        Ultimately, for the sake of rapid testing, the algorithm we have flown with deletes and regenerates the objects every cycle unless the object leaves the field of view.  This makes it very clear when the object estimation code is behaving erratically.
+        We developed and tested several algorithms to differentiate objects and refine uncertainties.
+        Most of these suffered from the objects' uncertainties falling so low that the probability of intersection between observation and model fell below reasonable thresholds and new object models were generated.  Part of the problem being that our object detection is still based on colour thresholding.  This generates objects of significant size.  Sized objects violate the assumption implicit in the normal distributions where the probability of locating an ``object'' at a zero sized point, is zero.
 
+        In order to facilitate rapid testing and expose weaknesses, the algorithm we have field tested with deletes and regenerates the objects every cycle unless the object leaves the field of view.  This makes it very clear when the object estimation code is behaving erratically.
+%XXX 
       \subsubsubsection{Uncertainty Analysis}
         \label{sec:UncertaintyAnalysis}
 
@@ -364,8 +370,8 @@ Web UI
         \end{bmatrix}, k=3
         \end{equation}
         %XXX get the justification for the product straight
-        This form is particularly convenient because the normal distribution behaves as a probability density function of prediction, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical Normal distributions is also an elliptical normal distribution.  
-
+        This form is particularly useful because the normal distribution behaves as a probability density function of prediction, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical Normal distributions is also an elliptical normal distribution.  
+%XXX check all the tenses
         In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed form solution and can be calculated from the inverse covariance matrix directly as follows:
         \begin{equation}
         \frac{\sqrt{|C|}}{\sqrt{(2\pi)^3}}
@@ -379,9 +385,9 @@ Web UI
         By permitting singular matrices, the ellipsoidal format has the flexibility to represent uncertainty distributions unbounded in length in any direction, representing rays and planes.  Such distributions are extremely common as measurements, an absence of information about constraints along a given axis would just be a zero in he inverse covariance matrix \cite{UncertainGeo}.  These singular forms still combine efficiently to form non-singular localised distributions.
         
       \subsubsubsection{Combining measurements}
-        These covariance structures are well suited for use as vectors, automatically calculating the uncertainty of any combination of vectors. 
+        The covariance structures are well suited to use as vectors, automatically calculating the uncertainty of any combination of vectors. 
         %XXX hacks and proofs should probably go to the appendices
-        Multiple observations of a single point are generally subject to averaging, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
+        Multiple observations of a single point are generally combined with a weighted average, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
         
         If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
         Using the form above, the product of density functions becomes the sum of polynomials.
@@ -493,13 +499,13 @@ Web UI
         Every sensor on our platform has some resolving power which favours particular directions.
         Our camera cannot locate a point in 3D space, but the direction is known within some small angular uncertainty.
         The Lidar Lite time of flight optical range sensor has a 3 degree conical beam, a 10mm starting aperture, 10mm resolution and a small amount of sample noise. It can locate an object in 3D space, but the uncertainty model favours depth to breadth.
-        The GPS gets interesting, In general we can say it has at least 3m sigma = 1 radius. However, over short time periods it has a relative resolution much better than that.
+        The GPS gets interesting.  In general we can say it has at least 3m \(\sigma=1\) radius; however, over short time periods it has a relative resolution much better than that.
       \subsubsubsection{The Hyperbolic case}
         \label{sec:hyperbolicCase}
         With a system that allows seamless representations of ellipsoids with singular matrices, it is not much of a stretch to consider ellipsoids represented by matrices with a negative determinant; the uncertainty ellipsoid becomes hyperbolic, expanding to an asymptote with an elliptical conic cross section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
         A simple hyperbolic form aligned along an axis will have one negative diagonal term, and zeros for all off-diagonal terms.
-        It is worth reiterating here that positive numbers represent increasing certainty and zero represents total uncertainty.  So intersecting a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
-        This stems from a hyperbolic PDF requiring a normalisation function over its area;  The location of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
+        It is worth reiterating here that positive numbers represent increasing certainty and zero represents total uncertainty; so intersecting a hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
+        This stems from a hyperbolic PDF requiring a normalisation function over its area.  The location of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
 
         Given that hyperbolic volume integrates to infinity, a probability density function would be infinitesimal everywhere.  A more useful definition of its behaviour would be that the line along the centre has a density of one (Figure \ref{fig:hyperbolicsub2}), or alternatively, that its cross-section integrates to one (Figure \ref{fig:hyperbolicsub3}).
         The latter model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
@@ -527,7 +533,7 @@ Web UI
         \label{fig:hyperbolic}
         \end{figure}
         With a single image from a camera, the only information collected about the location of an object is that it lies somewhere within a narrow cone of infinite length.  (Ignoring exploitable imperfections in the camera such as focal length)
-        In the case of stereo imaging, a the hyperbolic measurements of points in the near field would immediately reduce to localised ellipsoids, while points in the far field would become narrow hyperbolic distributions.
+        In the case of stereo imaging, the hyperbolic measurements of points in the near field would immediately reduce to localised ellipsoids, while points in the far field would become narrow hyperbolic distributions.
 
         The hyperbolic structure is symmetrical like the ellipse, which suggests probability behind the camera.  With decent image classifiers this is unlikely to be a problem as the final localised object will fall on the intersection of the rays.
 
@@ -536,7 +542,7 @@ Web UI
 
         The observations must be ranked by some metric, and sorted.  For \(m\) objects, and \(n\) observations, this takes \(m \times n\) memory.  In our low resolution computer vision pipeline, the number of possible visually non-unique objects is very small, so this product remains quite small in practice.
 
-        The choice of ranking metric is very much a context dependent decision.  In general though, because the ellipsoids can be interpreted as probability density functions of prediction, there is a function that defines the probability of intersection. The Bhattacharyya distance is a metric used in estimating the separability of clustered data, and makes for a reasonable first-choice of metric.
+        The choice of ranking metric is very much a context-dependent decision.  In general though, because the ellipsoids can be interpreted as probability density functions of prediction, there is a function that defines the probability of intersection. The Bhattacharyya distance is a metric used in estimating the separability of clustered data, and makes for a reasonable first-choice of metric.
 
 
   \subsection{Results and Discussion}
@@ -552,31 +558,31 @@ Web UI
       The object estimation code compensates for the pitch and roll using matrices representing body rotations under OpenCV.
       This compensation is designed to cleanly counter the non-linear second order signal injection, but with the camera mechanically coupled to a laptop instead of the simulated copter, the loop becomes completely unstable.
 
-      Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator, using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter, the copter moves forward, away from the object, turning around as it does so.
+      Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator.  Using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter, the copter moves forward, away from the object, turning around as it does so.
 
     \subsubsection{Live tests}
-      The copter is able to physically follow one object, while tracking multiple others.  Unfortunately, problems in maintaining calibration on multiple systems, particularly the camera gimbal, has severely limited the opportunities for testing edge cases in an end-to-end system.
+      The copter was able to physically follow one object, while tracking multiple others.  Unfortunately, problems in maintaining calibration on multiple systems, particularly the camera gimbal, severely limited the opportunities for testing edge cases in an end-to-end system.
 
       \subsubsubsection{Navigation System}
         The change from RC inputs to Velocity vector commands for the sake of control linearity resulted in much more predictable and consistent behaviour without significant loss of control bandwidth.
-        To reduce the length of the feedback loop, we used the guided waypoint functions and absolute yaw commands in Arducopter 3.2 onward.  This change drastically improved the flight stability of the copter, but significantly reduced the control bandwidth.  The waypoint updates appear to to be obeyed at several Hertz, despite a new request being sent every frame (30Hz).
-        The behaviour of our final navigation system was refreshingly predictable and by far the best choice for development in the near future, despite the loss of bandwidth.
+        To reduce the length of the feedback loop, we used the guided waypoint functions and absolute yaw commands in Arducopter 3.2 onward.  This change drastically improved the flight stability of the copter, but significantly reduced the control bandwidth.  The waypoint updates appeared to be obeyed at several Hertz, despite a new request being sent every frame (30Hz).
+        The behaviour of our final navigation system was refreshingly predictable and by far the best choice for future development despite the loss of bandwidth.
       
       \subsubsubsection{Object Localisation}
         The observation allocation routine selects the most likely object an observation could refer to. If the associated probability is below some threshold, it instead creates a new object.
         In one of the tests, velocity predictions were enabled along with object creation with an inverted axis on the inertial compensation matrices. This system quickly generated more than seventy unique objects in memory and ran velocity prediction on all of them live. The algorithm's CPU usage never approached the requirements for the computer vision despite running an unoptimised sorting and allocation routine, and uncertainty analysis.
-
+%XXX make all testing past tense
       \subsubsubsection{Object detection}
         %Basic colour matching limitations, false positives
-        The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this results in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
+        The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this resulted in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
 
         Many more advanced object detection processes became available on our platform over the course of the project thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
 
       \subsubsubsection{Bench Marks}
-        As mentioned earlier, the Arducopter firmwares offer a GPS driven ``follow me'' mode using the Android application ``Tower''. %XXX reference Tower
+        As mentioned earlier, the Arducopter firmwares offer a GPS driven ``follow me'' mode using the Android application ``Tower'' \cite{3dr-tower}.
         The GPS tether mode was very stable and eminently usable in real circumstances.  It suffered from worse update bandwidth issues than our autonomous modes, and frequently allowed the beacon to leave the frame.  We can presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
 
-        The GPS chase system did have some serious flaws though, in the very poor GPS environment of the Great Court on the UWA campus, the Ublox Neo7m radio was glitching more than 500m every couple of seconds.  With no operator assistance, the loss of GPS led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple GPS modules in redundant fashion so after that lesson, we were able to combat the urban canyon environment with radio diversity.
+        The GPS chase system did have some serious flaws though.  In the very poor GPS environment of the Great Court on the UWA campus, the Ublox Neo7m radio was deviating more than 500m every couple of seconds.  With no operator assistance, the loss of GPS led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple GPS modules in redundant fashion.  So we were able to combat the urban canyon environment with radio diversity.
 
 \section{Conclusions}
 
@@ -639,7 +645,7 @@ Web UI
   A problem addressed in section\ref{sec:objectAllocation} is that the objects detected by colour thresholding have a non-zero size which goes against the assumptions implicit in the statistical treatment of the observations.  Using an algorithm like SIFT would track multiple points on any given object, and provide nearly unique visual identifiers for allocating observations to individual objects.  While this would eliminate a small sorting routine in the object allocator, the overheads of SIFT may well require a larger computing budget.
 
   %Optical Flow
-  Optical Flow is an extremely interesting avenue of research for small UAVs because the high compute-cost can be handled by dedicated silicon like an FPGA.  Coupled with a covariance uncertainty analysis, Optical flow is able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.  
+  Optical Flow is an extremely interesting avenue of research for small UAVs because the high compute-cost can be handled by dedicated silicon like an FPGA.  Coupled with a covariance uncertainty analysis, Optical flow was able to resolve the relationship between relative velocity and proximity between copter and object with every frame from the camera.  
   
   As it stands, the uncertainty analysis in our implementation does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature when only a correlation between \(\dot{x}\) and \(z\) is known.  For sensors that cannot resolve velocity, the additional matrix elements are just zeroes.
     %XXX See control system theory, state vectors and time-step matrices.
