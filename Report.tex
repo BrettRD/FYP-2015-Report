@@ -208,6 +208,7 @@ New Flight Controller
 Telemetry
 Simulation Environment
 Web UI
+
       We reviewed the previous team's hardware configuration and prepared a report outlining the weaknesses and proposing a new approach.
     
       The flight hardware is a major component of the control loops in the object tracker, and the performance of these loops cannot be ignored.
@@ -295,21 +296,20 @@ Web UI
 
 \section{Object tracker}
   \subsection{Introduction}
-    %Chasing Objects is hard.
+  
     Tracking objects requires a long chain of systems to work in unison.  From tracking features in single images, all the way to reconstructing and navigating the environment without losing sight of the object.
-
-    %For mammals, this comes naturally.  Indeed, we sought inspiration from natural systems
-
     By focussing on extreme sport cinematography as the end goal of the project, the bar was set deliberately high.
-    Tracking high-speed, high-acceleration objects requires a large control bandwidth and robust detection and localisation algorithms.
+    Tracking high-speed, high-acceleration objects requires a large control bandwidth and accurate compensation for perturbations injected by the flight hardware.  
 
-    Our have efforts resulted in an end-to-end chain of modular software, with some functions migrated onto the flight controller to shorten control loops and enhance stability.  The on-board alternatives remain in the code-base as GPS-denied alternative control schemes.
+    At hand-over, the platform contained a chase-cam algorithm that used a PID loop between the position of the object in the image frame and the RC inputs to the flight computer.  Venables \cite{Venables} notes that the system does not deal well with changes in altitude, or perturbations in pitch and roll.  We found it was not able to follow a high contrast marker under modest accelerations in most conditions.
+
+    We have broken the process into clearly defined estimation steps to expose implicit assumptions, and incorporated some features from modern SLAM processes.  Our have efforts resulted in an end-to-end chain of modular software, with some functions migrated onto the flight controller to shorten control loops and enhance stability. 
 
   \subsection{Method}
 
     \subsubsection{Position estimation}
       %XXX existing or new PID system, make it clear that that changed
-      After experimenting with the rudimentary PID loop, we moved on to basic triangulation methods to estimate the location of an object with the assumption that it was on the ground.  We estimated the height based on the GPS altitude data streaming from the NAZA GPS; but without access to the NAZA's internal barometer, the uncertainty in height caused the navigation loop stability to vary significantly minute by minute.
+      After experimenting briefly with the existing PID loop process, we moved on to basic triangulation methods to estimate the location of an object with the assumption that it was on the ground.  We estimated the height based on the GPS altitude data streaming from the NAZA GPS; but without access to the NAZA's internal barometer, the uncertainty in height caused the navigation loop stability to vary significantly minute by minute.
       After upgrading to the Pixhawk, we had access to the data from the Extended Kalman Filter in the flight controller.  We also made significant changes to the way the flight controller was guided by the server, and this prompted a near total re-write of the object tracking code-base.
 
     \subsubsection{Desired relative pose}
@@ -422,7 +422,7 @@ Web UI
         \mu_3 = C_3^{-1} . (C_1.\mu_1 + C_2.\mu_2)
         \end{equation}
         Clearly apparent here, is that \(\mu_3\) is undefined if \(C_3\) is singular.
-        This is not a loss of generality, merely an artefact of the matrix form.  If the matrix \(C_3\) represents a ray, \(C_3\)  will have one eigenvalue of zero and \(\mu\) will have a degree of freedom along the corresponding eigenvector.
+        This is not a loss of generality, merely an artefact of the matrix form.  If the matrix \(C_3\) represents a ray, \(C_3\) will have one eigenvalue of zero and \(\mu\) will have a degree of freedom along the corresponding eigenvector.
         
         This method minimises the sum of the squares of the Mahalanobis distances between the result and the initial two ellipsoids.  This property of minimised Mahalanobis distances is maintained with additional ellipsoids, effectively creating a least sum of squares regression method that accounts for the covariance geometry of each measurement as successive ellipsoids are added to the mix.
         This least squares regression method becomes obvious in the case of spherical distributions.  The successive combination of \(n\) measurements, each with an assumed variance of \(\sigma^2\), will have a resultant variance of \(\sigma^2/n\) which is consistent with treatment of uncertainties in the one dimensional case.
@@ -481,7 +481,7 @@ Web UI
         \end{bmatrix}
         \end{equation}
         Where \(S_n\) represent the change of scale along any axis.
-        The scale operator can be used to reverse the direction of a vector.  This allows the definition of a discreet time derivative \(\dot{x} = (x(t_1) - x(t_2))/(t_2-t_1)\).  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged by intersecting multiple samples.
+        The scale operator can be used to reverse the direction of a vector.  This allows the definition of a discreet time derivative \(\dot{x} = (x(t_1) - x(t_2))/(t_2-t_1)\).  A positional derivative defined in this way has an appropriately large velocity uncertainty distribution that increases in size with shorter time-steps, but can be averaged by intersecting multiple samples of velocity.
 
         \paragraph{Rotate}
         The ellipsoidal structure can be rotated as follows:
