@@ -107,36 +107,25 @@
     %XXX Background, Aims
     %route map for project
     Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
+    
+    The UWA hexacopter development programme commenced in 2013. It provides a UAV platform with which students can develop and test appropriate technologies in a structured format. The hexacopter was initially built by the 2013 project group.
 
-    %XXX
 
-    We have developed computer vision driven chase cam processes for the 
-     capabilities for a commodity multirotor UAV to act as a 
-     the remote object informed by computer vision alone.
+    The 2015 programme team-members were Jeremy Tan \cite{Tan}, Richard Allen \cite{Allen} Manish Mohanty \cite{Mohanty} and Brett Downing \cite{Downing}.  The team agreed to design and execute individual projects as interdependent modules within the overall programme.
 
-    In order to keep a well rounded perspective on our scope, the team agreed to design set our respective scopes as interdependent modular components in a much larger system.  This made it painfully clear when the scope or generality of our work fell short.
     Tan \cite{Tan} developed a library of feature detection and extraction routines and assessed the optimisation potential for each on the single board computer of our platform.
-    Allen \cite{Allen} investigated means of implementing collision avoidance on a UAV, developing a robust algorithm to find the shortest detour around an exclusion zone, and experimenting with low-confidence occupancy grids.
-    Mohanty \cite{Mohanty} worked on Capture and Tagging of images to suit proprietary offline 3D reconstruction algorithms, and the generation of paths with which to scan objects and fields.
+    Allen \cite{Allen} investigated means of implementing collision avoidance on a UAV, developing a robust algorithm to find the shortest detour around an exclusion zone, and experimenting with low-confidence occupancy grids. 
+    Mohanty \cite{Mohanty} worked on Capture and Tagging of images to suit proprietary online 3D reconstruction algorithms, and the generation of paths with which to scan objects and fields.
+    I (Brett Downing) \cite{Downing} developed the Computer vision driven chase-cam behaviour described in this report, using the optimised Computer Vision routines under active development by Tan \cite{Tan}.
+    All Motion Control routines in the code base were designed keeping in mind that they must eventually be integrated with the collision avoidance and geo-fencing routines developed by Allen \cite{Allen}. This included the mapping paths used by Mohanty \cite{Mohanty}.
 
-    The Computer vision driven chase-cam behaviour described here is based on the optimised Computer Vision routines under active development by Tan \cite{Tan}.
+    The UAV inherited from the 2014 project team was tested and determined to be inadequate as a test-bed for the 2015 project. We therefore re-designed and re-built the UAV; thereby greatly improving its overall capabilities and making it fit-for-purpose. The re-build involved replacement of both the flight controller and the server, and optimised the sensor package. 
 
-    All Motion Control routines in the code base were designed keeping in mind that they must eventually be integrated with the collision avoidance and geo-fencing routines developed by Allen \cite{Allen}.  This included the mapping paths used by Mohanty \cite{Mohanty}.
+    We brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes. We also demonstrated that low-power single board computers can perform live computer vision processes and elements of SLAM processes with uncertainty based reasoning to track and follow moving objects. Our Computer-Vision-Only routines are by no means as robust as radio links and differential GPS, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn GPS beacon. Our Object tracker was demonstrated with a variety of navigation loops, some of which were not GPS dependent.
 
-    Development of the object tracker placed a strong focus on the capabilities of the platform.  We saw fit to undertake a critical review of all aspects of the platform, and make improvements that facilitate the current typical feature set.
-
-    The inherited platform did not meet our requirements
-
-    We have developed a suite of computer vision processes to detect and locate features in the camera frame,  objects, compute 
-
-    and proven them as GPS-assisted control routines.
-
-    %route map for report
-    Object tracker and Platform discussed in two separate sections.
-
+    In this report, the chase-cam project is documented in two parts: re-purposing of the UAV test-platform, and development and testing of Object Tracker autonomous navigational systems. Methodology, results and discussion are covered separately for each of the Platform and Object Tracker sections.
 
   \section{Background}
-
 
     %XXX unapologetically copied from proposal doc, needs updating and expanding
     \subsection{Motivation}
@@ -186,7 +175,7 @@
     \subsection{Project History}
 
       \subsubsection{2013}
-        The 2013 team of O'Connor \cite{OConnor} and Venables \cite{Venables} established the UAV research project with the purchase of a DJI ``flame-wheel'' F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted into an autonomous platform with the addition of a Raspberry Pi single-board computer (RPi) and a circuit to switch the control channels from the radio receiver to the RPi GPIO outputs.
+        The 2013 team of O'Connor \cite{OConnor} and Venables \cite{Venables} established the UAV research programme with the purchase of a DJI ``flame-wheel'' F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted into an autonomous platform with the addition of a Raspberry Pi single-board computer (RPi) and a circuit to switch the control channels from the radio receiver to the RPi GPIO outputs.
         The NAZA-lite at this time did not feature telemetry outputs or way-point inputs, but it was able to loiter in a stiff wind using a GPS fix.
         This team gathered location information for the RPi using a Qstarz GPS unit, and bearing information using an X-sens IMU.  The weight of the sensor duplication did not exceed the maximum payload capacity of the platform, but it did compromise flight-time.
         Under direct control from the RPi, the drone was able to execute basic way-point navigation.
@@ -291,7 +280,7 @@
 
       Attention was paid to the mass of the wiring harness, as almost 200g of cables and adaptors came out of the copter during the upgrade.
 
-      The only custom components remaining on the copter are the power supplies, interlink cables, and a GPIO breakout board for the Raspberry pi.  We are very confident that this project can be fully replicated by any motivated hobbyist.
+      The only custom components remaining on the copter are the power supplies, interlink cables, and a GPIO breakout board for the Raspberry pi.  We are very confident that this platform can be fully replicated by any motivated hobbyist.
 
 \section{Object tracker}
   \subsection{Introduction}
@@ -557,7 +546,7 @@
       The object estimation code compensates for the pitch and roll using matrices representing body rotations under OpenCV.
       This compensation is designed to cleanly counter the non-linear second order signal injection, but with the camera mechanically coupled to a laptop instead of the simulated copter, the loop becomes completely unstable.
 
-      Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator.  Using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter, the copter moves forward, away from the object, turning around as it does so.
+      Commenting out the pitch and roll decoupling code makes the copter very well-behaved in the simulator.  Using a pose generator that attempts to place the object at a ray cast forward and down from the copter, the copter can be confidently led around the simulation environment.  If the object appears behind the copter (below the centre-line of the image frame), the copter moves forward, away from the object, turning around as it does so.
 
     \subsubsection{Live tests}
       The copter was able to physically follow one object, while tracking multiple others.  Unfortunately, problems in maintaining calibration on multiple systems, particularly the camera gimbal, severely limited the opportunities for testing edge cases in an end-to-end system.
@@ -575,7 +564,7 @@
         %Basic colour matching limitations, false positives
         The feature detection algorithm used in all testing of this platform was very simple colour space thresholding.  In uncontrolled environments, this resulted in multiple detected features with no effective means of differentiating them.  The uncertainty analysis did appear to help with this in the limited live testing it received, but the code was not sufficiently ready to draw any generalised conclusions.
 
-        Many more advanced object detection processes became available on our platform over the course of the project thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
+        Many more advanced object detection processes became available on our platform over the course of the programme thanks to the work of Tan \cite{Tan}, but these were in active development throughout the project and offered no consistent foundation to test upon.
 
       \subsubsubsection{Bench Marks}
         As mentioned earlier, the Arducopter firmwares offer a GPS driven ``follow me'' mode using the Android application ``Tower'' \cite{3dr-tower}.
@@ -598,10 +587,9 @@ We reviewed, re-designed and re-built the UWA autonomous hexacopter; thereby gre
 During the project, the flight controller firmware advanced from Arducopter V3.2, through V3.3rc10, to V3.3 stable near the end of the project.
 The enhanced server supported advanced computer vision routines.
 We brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes. We also demonstrated that low-power single board computers can perform live computer vision processes and elements of SLAM processes with uncertainty based reasoning to track and follow moving objects. Our Computer-Vision-Only routines are by no means as robust as radio links and differential GPS, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn GPS beacon. Our Object tracker was demonstrated with a variety of navigation loops, some of which were not GPS dependent. In commodity chase-cams, these control schemes could allow a graceful handover from radio beacon to computer vision in the event of a GPS failure.
+%XXX copied in the intro
 
 %BUSHIT STATEMENT ABOUT YOUR GIFT TO HUMANITY AND THE BRIGHT FUTURE IT UNVEILS.
-
-
 
 \section{Recommendations}
 
