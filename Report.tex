@@ -101,11 +101,18 @@
   \tableofcontents
   \pagebreak
   \section{Introduction}
+  %aims
+    PENDING THE APPLICATION OF SENSE
+    
     %XXX Background, Aims
     %route map for project
     Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
 
-    We have developed capabilities for a commodity multirotor UAV to act as a chase cam with the position of the remot object informd by computr vision alone.
+    %XXX
+
+    We have developed computer vision driven chase cam processes for the 
+     capabilities for a commodity multirotor UAV to act as a 
+     the remote object informed by computer vision alone.
 
     In order to keep a well rounded perspective on our scope, the team agreed to design set our respective scopes as interdependent modular components in a much larger system.  This made it painfully clear when the scope or generality of our work fell short.
     Tan \cite{Tan} developed a library of feature detection and extraction routines and assessed the optimisation potential for each on the single board computer of our platform.
@@ -574,6 +581,11 @@ Web
         The GPS chase system did have some serious flaws though, in the very poor GPS environment of the Great Court on the UWA campus, the Ublox Neo7m radio was glitching more than 500m every couple of seconds.  With no operator assistance, the loss of GPS led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple GPS modules in redundant fashion so after that lesson, we were able to combat the urban canyon environment with radio diversity.
 
 \section{Conclusions}
+
+  \subsection{Platform}
+
+    When we started with the new flight controller, we were using the Arducopter 3.2 firmware. To exploit new gimbal features for the object tracker, we upgraded to Arducopter 3.3rc10 and finally 3.3 stable when it released near the end of the project.  The next version of the firmware is set to include features like guided-mode without a GPS lock requirement, which will open possibilities for fully computer vision driven algorithms.  The UWA platform will continue to benefit from improvements to the Arducopter firmware into the foreseeable future.
+
   \subsection{Object tracker}
     Our current implementation attempts to encode all appropriate information in an inverse covariance matrix format, preserving as much information as possible while reducing the number of implicit assumptions.
 
@@ -605,13 +617,7 @@ Web
     Handling the velocity of external objects is not quite usable yet, though the code base does contain most of the requisite functions.  The code that extrapolates object object position based on velocity has been largely disabled, pending live tests of the more advanced observation allocation algorithms.  Until the objects' positions are being updated and adjusted live, there will be no data to infer velocity from, so the velocity handlers will simply be place-holders to maintain the size of the positional uncertainty of the objects.
 
 
-  \subsection{Platform}
-
-    When we started with the new flight controller, we were using the Arducopter 3.2 firmware. To exploit new gimbal features for the object tracker, we upgraded to Arducopter 3.3rc10 and finally 3.3 stable when it released near the end of the project.  The next version of the firmware is set to include features like guided-mode without a GPS lock requirement, which will open possibilities for fully computer vision driven algorithms.  The UWA platform will continue to benefit from improvements to the Arducopter firmware into the foreseeable future.
-
   \subsection{Final Conclusions}
-
-
     We have greatly improved the capabilities of the UWA autonomous hexacopter platform, and have brought the code-base up to a level where it is feasible to implement rudimentary SLAM processes.
     We have also demonstrated that low-power single board computers can perform live computer vision processes and rudimentary SLAM processes with uncertainty based reasoning to track and follow moving objects.
     Our Computer-Vision-Only routines are by no means as robust as radio links and differential GPS, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn GPS beacon.
