@@ -195,108 +195,107 @@
         The 2014 team of Baxter \cite{Baxter}, Mazur \cite{Mazur} and Targhagh \cite{Targhagh} added an internet accessible web UI to control the various autonomous features of the original platform, displaying the flight-path of the copter and a live feed from the camera.
         The navigation routines were improved and extended to permit operation in the absence of reliable heading information, and the computer vision routines were extended.
 
+  %describe the hardware changes.
   \section{Platform}
-  %describe the hardware in detail.
     \subsection{Introduction}
-      %introduce why you are focussing on the platform.
       %reset image.
-      At initial handover, 
+      This project centred around a hexacopter based on the DJI F550 ``Flame Wheel'' frame. This frame allows for a generous lift capacity, and plenty of space to fasten flight assist hardware, and represents a low cost platform so that our work can be reproduced by a sufficiently motivated hobbyist.
 
-Control Handover
-Sensor Duplication
-New Flight Controller
-Telemetry
-Simulation Environment
-Web UI
+      In this work, the flight tasks are based around two physically separate processors; the Flight Controller, and the Server. This allows a stable, known-safe build to be maintained on the flight controller, while experimental code runs on the server. If the server fails for any reason, the flight controller will maintain flight and engage various fail-safe behaviours without having to rely on the experimental code for flight critical functions.
 
-      We reviewed the previous team's hardware configuration and prepared a report outlining the weaknesses and proposing a new approach.
-    
-      The flight hardware is a major component of the control loops in the object tracker, and the performance of these loops cannot be ignored.
-      For a multi-copter to move forward, it must control the speed of the props to create a pitch angular acceleration. The pitch angle is stabilised to generate a forward acceleration which is used to control position.
-      Contrast this with a ground based robot where the navigation routines interact with a mechanically well-constrained system.
-      
-      At almost every stage of this fifth order dynamic system, the flight mechanics introduce perturbations to any additional control system with a particular intent.
+      %introduce why you are focussing on the platform.
+      The platform inherited from the previous years' team was tested and found to be inadequate for the planned development of object tracking systems.  The platform was re-designed and re-built according to a different set of constraints.  This involved:
 
-      In order to support the object tracker, the platform must meet certain minimum requirements in both performance and telemetry.
+      \begin{itemize}
+        \item Installing a new flight controller
+        \item Minimising sensor duplication
+        \item Inclusion of a dedicated telemetry channel
+        \item Using an open-source simulation environment
+        \item Refreshing the Web UI and HUD
+        \item A new interface between the flight controller and the server.
+      \end{itemize}
 
 
-    \subsection{Architecture and Methodology}
+    \subsection{Methodology}
       %>minimum requirements
       %>theory of the requirements of the platform
       %>describe the control architecture required for the object tracker
-      %>Preferable Architecture
+      At initial handover, the flight controller was a DJI NAZA lite, and the server was a Raspberry Pi model B+.  These two systems were linked by RC emulation using ServoBlaster to generate the PWM signals.
 
-      This project centred around a hexacopter based on the DJI F550 ``Flame Wheel'' frame. This frame allows for a generous lift capacity, and plenty of space to fasten flight assist hardware, and represents a low cost platform so that our work can be reproduced by a sufficiently motivated hobbyist.
+      The NAZA lite and RC emulation for autonomous flight did not fit together well. The NAZA lite is designed as an entry level free-flight controller and does not expose any interfaces for telemetry or data acquisition.  As a result, the previous teams had to duplicate the GPS and IMU sensors to make such information available to the server's algorithms.
 
-      %XXXFlight controller
-      In this work, the flight tasks are based around two physically separate processors; the Flight Controller, and the Server. This allows a stable, known-safe build to be maintained on the flight controller, while experimental code runs on the server. If the server fails for any reason, the flight controller will maintain flight, and it allows the operator to engage various fail-safe behaviours without having to rely on the experimental code.
-      
-      At initial hand-over, the fight controller was a DJI NAZA lite.
-      
-      %XXXprocessor, gimbal
-       server was a Raspberry Pi model B+, and
+      We attempted to address the issues on the existing platform individually, but quickly realised that the improvements could only go so far with the NAZA lite, and even then would involve significant purchases of DJI accessories.
 
-      %>objective of the platform (with history)
-      The NAZA and RC emulation for autonomous flight did not fit together well. The NAZA lite is designed as an entry level free-flight controller and does not expose any interfaces for telemetry or data acquisition.  As a result, the previous teams had to duplicate the GPS and IMU sensors to make such information available to the server's algorithms.
+      We undertook a full critical review of every aspect of the copter, and prepared a report proposing changes we thought would be sufficient.  The proposal document is included in Appendix \ref{sec:PihawkProposal}
 
-      The NAZA Lite also does not feature waypoint navigation features, or secondary command channels so the previous teams used a relay board to physically switch the control inputs from the RC receiver to the server, and implemented their own flight control algorithms on the server.
-      This breaks the assumption that the flight controller will maintain flight during a server crash.  Indeed, we were told that server lock-ups frequently caused the craft to power-dive.
-
-      %>critical review
-
-      %The copter now boasts a very complete feature set 
-
-
-    
-
-      %>how to test for compliance min performance criteria
-      
+      Discussed here are all of the significant changes made to the platform.
 
 
   \subsection{Results and Dicussion}
     %(fitness for purpose etc)
+    \subsection{Server Upgrade}
+      The server was upgraded to a Raspberry Pi Version 2 shortly after its release in February.  The Version 2 is a multi-core processor with more RAM, but we still regard as a computationally starved platform.
+      At the time of writing, the Raspberry Pi V2 has less computational power than a smart-phone in the \$200 price bracket.
 
-    The server has been upgraded to a Raspberry Pi V2 single board computer, which we still regard as a computationally starved platform.  At the time of writing, the Raspberry Pi V2 has less computational power than a smartphone in the \$200 price bracket.
-    \subsubsection{Control Handover}
-      The physical switch of control from the user to the server, and the ongoing development of a control loop meant that RC switch was never configured to surrender the throttle channel, and the server was left without altitude control.  This meant that the server had continuous perturbations from the user who remained responsible for maintaining a fixed altitude by sight alone.
-
-
-    \subsubsection{Sensor Duplication}
-
-      %XXX(image: GPS track, glitch from Uni Club to Eng Carpark)
-
-      We made some attempts to break into the data channel between the NAZA flight controller and its GPS module, but the raw GPS and compass data was not particularly useful without the accelerometer and gyro data.  This channel had also been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.  A community RC group had reverse engineered this link, and we ported their code to the raspberry pi and removed the Qstar-z GPS unit.
-      
-      %XXX How many commas do you want!?
-      The new configuration allowed us to fully eliminate duplicated hardware, an opportunity to fully re-build the wiring harness, and significantly reduce the weight of the craft, extending the flight time to almost twenty minutes.
-      Near the end of the project, we fitted a second GPS module to the copter to combat the poor multipath environment of the UWA campus.  With the sensor fusion and Extended Kalman Filter in the Ardupilot firmware, we we able to fly on GPS alone in some of the worst urban canyons in the campus.
-
-
-      The server did not have access to an estimate of remaining flight time, and the user could not retrieve logs in the event of a crash.
-
-      Waypoints were handled on the server despite the NAZA featuring GPS assisted loiter behaviour, and a reliable return-to-launch failsafe feature.  In general, control loops should be as short as possible, and routing them through an entirely separate processor is clearly suboptimal.
-%an unnecessarily long loop
     \subsubsection{New Flight Controller}
-      We swapped the NAZA flight controller out for a 3DR Pixhawk running the Ardupilot 3.3 firmware.  This gave us Waypoints, altitude control, failsafes, telemetry, and a GPS-only driven follow-me mode out of the box.
-      The open and configurable flight controller with built-in autonomous and hybrid modes allowed us to fully surrender control to the autonomous platform, including altitude control.  The built-in mode change behaviours meant that we could relinquish and resume manual control at the remote, or activate fail-safes just as reliably as with the NAZA.
-      
+      We swapped the NAZA flight controller for a 3DR Pixhawk running the Ardupilot 3.2 firmware.  This gave us a feature rich platform with a clear upgrade path to newer versions of Ardupilot, the option to use alternative firmwares like PX4 and Paparazzi, and the option for future students to recompile the firmware with new high-performance features.
+
     \subsubsection{Telemetry}
       The telemetry link supports the MAVlink protocol, which defines various commands from interrogating the status to setting waypoints, or even setting the instantaneous velocity vector.
       This let us keep the high-speed components of the control loops firmly inside the flight controller, and direct it with the lower speed vision tasks.  This also gave us linear control inputs in SI units.
 
+    \subsubsection{Sensor Duplication}
+      %XXX(image: GPS track, glitch from Uni Club to Eng Carpark)
+      We broke into the data channel between the NAZA flight controller and its GPS module in order to remove the redundant Qstar-Z GPS module and acquire some telemetry data from the NAZA.
+
+      The data channel for the GPS had been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.
+      
+      A community RC group had reverse engineered this link, and we ported their code to the raspberry pi, successfully decoded the data stream and integrated the NAZA GPS and compass data into our control loops.
+      Unfortunately, the raw GPS and compass data was not particularly useful without the accelerometer and gyro data generated on the flight controller unit itself.
+
+      After changing to the Pixhawk, the coordinates, body angles, velocity, and battery state were all available over the MAVlink telemetry interface.
+      The new configuration allowed us to fully eliminate duplicated hardware, an opportunity to re-build the wiring harness, significantly reduce the weight of the craft and extend the flight time to almost twenty minutes on the original batteries and motors.
+
+      Near the end of the project, we fitted a second GPS module to the flight controller to combat the poor multipath environment of the UWA campus.  With the sensor fusion and Extended Kalman Filter in the Ardupilot firmware, we we able to fly on GPS alone in some of the worst urban canyons in the campus.
+
+    \subsection{Waypoints}
+      Waypoints were initially handled on the server despite the NAZA featuring GPS assisted loiter behaviour, and a reliable return-to-launch failsafe feature.  Generally speaking, control loops should be as short as possible, and routing them through an entirely separate processor is clearly suboptimal.
+      
+      Waypoints are a well-solved problem and came as standard with every open-source flight controller on the market.
+
+    \subsubsection{Control Handover}
+      Initially, control was handed from pilot to server using relays on the RC inputs the the flight controller.  The ongoing development of control loops meant that RC switch had never been configured to surrender the throttle channel, and the server was left without altitude control.
+      This meant that the server had continuous perturbations from the user who remained responsible for maintaining a fixed altitude by sight alone.
+
+      Using the Pixhawk in guided mode, the flight computer is responsible for maintaining and changing altitude based on requests from the server over the primary telemetry channel.
+      
+      The flight controller is toggled between guided and manual modes by a switch on the pilot's transmitter.  If the UAV ever flies out of range of the transmitter, the flight controller drops into the Return-To-Launch fail-safe mode.  At the request of our supervisors, this was demonstrated almost every week.
+
+      The changes give the platform complete autonomy, and still permit operator intervention at any stage.
+
     \subsubsection{Simulation Environment}
       By using a fully-featured open-source flight controller, we also had access to the community developed simulation environment.  
-      The Ardupilot simulator is designed to simulate the behaviour of the flight controller against various hardware configurations and flight styles.  As such, it incorporates a comprehensive inertial model and noise injection to the various sensors.
+      The Ardupilot simulator is designed to simulate the behaviour of the flight controller against various hardware configurations and flight styles.  As such, it incorporates a comprehensive inertial model and injects noise into the various sensors.
       We were able to compile our tests for our development machines couple them to the simulator over a local TCP socket, and test them against the same version of the flight control firmware as we had uploaded to the physical copter.
 
-
     \subsubsection{Web UI}
+      The server hosts a webpage used to configure and activate the autonomous features.
       We saw fit to refresh the Web UI and HUD, implementing a more appealing and maintainable template system, and adding more information to the display.
-      The Web UI works on almost all devices.
+      The Web UI now works on almost all devices.
+
+      More detail on the Web UI is available in the 2015 thesis of Tan \cite{Tan}
+
+    \subsubsection{Wiring Harness}
+      The RC switch was a source of considerable confusion and wiring faults had caused power supply contention issues leading to regular server failures.
+      After installing the Pixhawk, the wiring harness was completely re-worked, and every major component was placed on separate regulators.
+
+      Attention was paid to the mass of the wiring harness, as almost 200g of cables and adaptors came out of the copter during the upgrade.
+
+      The only custom components remaining on the copter are the power supplies, interlink cables, and a GPIO breakout board for the Raspberry pi.  We are very confident that this project can be fully replicated by any motivated hobbyist.
 
 \section{Object tracker}
   \subsection{Introduction}
-  
+
     Tracking objects requires a long chain of systems to work in unison.  From tracking features in single images, all the way to reconstructing and navigating the environment without losing sight of the object.
     By focussing on extreme sport cinematography as the end goal of the project, the bar was set deliberately high.
     Tracking high-speed, high-acceleration objects requires a large control bandwidth and accurate compensation for perturbations injected by the flight hardware.  
@@ -625,8 +624,6 @@ We brought the code-base up to a level where it is feasible to implement rudimen
   As it stands, the uncertainty analysis in our implementation does not account for correlations between velocity and position, but the matrices can simply be expanded to \(6\times6\) inverse correlation matrices instead of storing independent \(3\times3\) matrices for position and velocity.  The \(6\times6\) matrix also allows the observation-to-object allocator to use velocity as a distinguishing feature when only a correlation between \(\dot{x}\) and \(z\) is known.  For sensors that cannot resolve velocity, the additional matrix elements are just zeroes.
     %XXX See control system theory, state vectors and time-step matrices.
 
-  %Adding a stereo pair of cameras to the copter using the large 550mm base-line afforded by the frame, would create multiple simultaneous position and velocity measurements, eliminating the Z-axis ambiguity over a significant usable range.  
-  %Using data from stereo image sources is well solved by our existing uncertainty analysis, though the camera input options are limited on the RPi. I would strongly recommend the inclusion of a vision co-processor to handle frame synchronisation and image mixing if Stereo imaging is explored.  This vision co-processor could also accelerate edge-detection and optical flow processes.
 
   %Use ROS
   The current structure of the code base is sound, but makes it difficult to run processes like object tracking and object avoidance simultaneously.  This situation could be improved by using a subscriber model between different processes, such as that used by ROS.
@@ -650,11 +647,6 @@ We brought the code-base up to a level where it is feasible to implement rudimen
 %---------------------------------------------------------
 
 \begin{appendices}
-  %\addcontentsline{toc}{section}{Appendices}
-%  \section{ArduPilot (Pixhawk) Proposal} \label{sec:PihawkProposal}
-%    \includepdf[pages=-]{../picopter/Documents2015/ardupilot-proposal/ardupilot-proposal.pdf}
-
-
   \section{Atomic Graph-Traversal SLAM Proposal} \label{sec:SLAMproposal}
     
     Storing a motion history of the objects would facilitate the generation of a time-dependent network of estimated locations and relative measurements.
@@ -671,6 +663,10 @@ We brought the code-base up to a level where it is feasible to implement rudimen
     %A SLAM process can be initialised by an assumption in the form of an artificial survey marker at boot. The assumptions can be later removed and replaced by real survey markers, with the map fully regenerated by the graph traversal process which need not be on-board the robot.
 
 
+
+  %\addcontentsline{toc}{section}{Appendices}
+  \section{ArduPilot (Pixhawk) Proposal} \label{sec:PihawkProposal}
+    \includepdf[pages=-]{../picopter/Documents2015/ardupilot-proposal/ardupilot-proposal.pdf}
 
 \end{appendices}
 
