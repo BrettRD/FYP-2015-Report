@@ -17,6 +17,7 @@
 
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1em}
+\renewcommand{\baselinestretch}{1.2}
 
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
@@ -93,20 +94,38 @@
   Multirotors are here to stay, and may soon be expected to interact in a human environment.
   Commodity quadcopters are advertising capabilities to act as  chase-cams and turn-key mapping solutions, but none of the current generation commodity uav chase-cams offer computer vision driven or even assisted flight modes to improve tracking, image framing or obstacle avoidance.  Such vision assisted routines would also apply to autonomous or semi-autonomous inspection tasks for fixtures in remote or hazardous environments.
 
-  In this project, we build on the results of previous year groups and implement turn-key waypoint navigation and failsafe methods using the ardupilot software stack, and develop robust object tracking, data collection behaviours and exclusion zones on a computationally starved platform with an aim to integrate vision assisted behaviours in low-cost, lightweight UAVs.
+  In this project, we re-designed and re-built the hexacopter platform inherited from previous year groups and implemented turn-key waypoint navigation and failsafe methods using the Ardupilot software stack.
+  Using this platform, we developed and tested computer vision driven object tracking and navigation routines using limited computational resources. The aim  being to integrate vision assisted behaviours into future low-cost, lightweight UAVs.
   \end{abstract}
   \pagebreak
   \tableofcontents
   \pagebreak
   \section{Introduction}
     %XXX Background, Aims
-
+    %route map for project
     Recent Developments in power and control electronics has allowed small, consumer level UAVs to lift enough processing capacity to navigate at least partly by computer vision.
+
+    We have developed capabilities for a commodity multirotor UAV to act as a chase cam with the position of the remot object informd by computr vision alone.
+
+    In order to keep a well rounded perspective on our scope, the team agreed to design set our respective scopes as interdependent modular components in a much larger system.  This made it painfully clear when the scope or generality of our work fell short.
+    Tan \cite{Tan} developed a library of feature detection and extraction routines and assessed the optimisation potential for each on the single board computer of our platform.
+    Allen \cite{Allen} investigated means of implementing collision avoidance on a UAV, developing a robust algorithm to find the shortest detour around an exclusion zone, and experimenting with low-confidence occupancy grids.
+    Mohanty \cite{Mohanty} worked on Capture and Tagging of images to suit proprietary offline 3D reconstruction algorithms, and the generation of paths with which to scan objects and fields.
+
+    The Computer vision driven chase-cam behaviour described here is based on the optimised Computer Vision routines under active development by Tan \cite{Tan}.
+
+    All Motion Control routines in the code base were designed keeping in mind that they must eventually be integrated with the collision avoidance and geo-fencing routines developed by Allen \cite{Allen}.  This included the mapping paths used by Mohanty \cite{Mohanty}.
+
+    Development of the object tracker placed a strong focus on the capabilities of the platform.  We saw fit to undertake a critical review of all aspects of the platform, and make improvements that facilitate the current typical feature set.
+
+    The inherited platform did not meet our requirements
 
     We have developed a suite of computer vision processes to detect and locate features in the camera frame,  objects, compute 
 
     and proven them as GPS-assisted control routines.
 
+    %route map for report
+    Object tracker and Platform discussed in two separate sections.
 
 
   \section{Background}
@@ -173,14 +192,24 @@
   %describe the hardware in detail.
     \subsection{Introduction}
       %introduce why you are focussing on the platform.
+      %reset image.
+      At initial handover, 
+
+Control Handover
+Sensor Duplication
+New Flight
+Telemetry
+Simulation Environment
+Web
+
+    
       The flight hardware is a major component of the control loops in the object tracker, and the performance of these loops cannot be ignored.
       For a multi-copter to move forward, it must control the speed of the props to create a pitch angular acceleration. The pitch angle is stabilised to generate a forward acceleration which is used to control position.
-      At almost every stage of this fifth order dynamic system, the flight mechanics introduce perturbations to any additional control scheme with a particular intent.
-
       Contrast this with a ground based robot where the navigation routines interact with a mechanically well-constrained system.
+      
+      At almost every stage of this fifth order dynamic system, the flight mechanics introduce perturbations to any additional control system with a particular intent.
 
-      In order to support the object tracker
-
+      In order to support the object tracker, the platform must meet certain minimum requirements in both performance and telemetry.
 
 
     \subsection{Architecture and Methodology}
@@ -207,7 +236,6 @@
       This breaks the assumption that the flight controller will maintain flight during a server crash.  Indeed, we were told that server lock-ups frequently caused the craft to power-dive.
 
       %>critical review
-      Because of the rapid pace at which the market is adopting new features and technologies, we saw fit to undertake a critical review of all aspects of the platform, and begin improvements that facilitate the current typical feature set.
 
       %The copter now boasts a very complete feature set 
 
@@ -227,16 +255,14 @@
 
 
     \subsubsection{Sensor Duplication}
-      %XXX How many commas do you want!?
-      The new configuration allowed us to fully eliminate duplicated hardware, an opportunity to fully re-build the wiring harness, and significantly reduce the weight of the craft, extending the flight time to almost twenty minutes.
-      Near the end of the project, we fitted a second GPS module to the copter to combat the poor multipath environment of the UWA campus.  With the sensor fusion and Extended Kalman Filter in the Ardupilot firmware, we we able to fly on GPS alone in some of the worst urban canyons in the campus.
 
       %XXX(image: GPS track, glitch from Uni Club to Eng Carpark)
 
-    \subsubsection{Sensor Duplication}
-
       We made some attempts to break into the data channel between the NAZA flight controller and its GPS module, but the raw GPS and compass data was not particularly useful without the accelerometer and gyro data.  This channel had also been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.  A community RC group had reverse engineered this link, and we ported their code to the raspberry pi and removed the Qstar-z GPS unit.
       
+      %XXX How many commas do you want!?
+      The new configuration allowed us to fully eliminate duplicated hardware, an opportunity to fully re-build the wiring harness, and significantly reduce the weight of the craft, extending the flight time to almost twenty minutes.
+      Near the end of the project, we fitted a second GPS module to the copter to combat the poor multipath environment of the UWA campus.  With the sensor fusion and Extended Kalman Filter in the Ardupilot firmware, we we able to fly on GPS alone in some of the worst urban canyons in the campus.
 
 
       The server did not have access to an estimate of remaining flight time, and the user could not retrieve logs in the event of a crash.
@@ -261,16 +287,6 @@
     \subsubsection{Web UI}
       We saw fit to refresh the Web UI and HUD, implementing a more appealing and maintainable template system, and adding more information to the display.
       The Web UI works on almost all devices.
-
-    \subsubsection{Cooperative Projects}
-      In order to keep a well rounded perspective on our scope, the team agreed to design set our respective scopes as interdependent modular components in a much larger system.  This made it painfully clear when the scope or generality of our work fell short.
-      Tan \cite{Tan} developed a library of feature detection and extraction routines and assessed the optimisation potential for each on the single board computer of our platform.
-      Allen \cite{Allen} investigated means of implementing collision avoidance on a UAV, developing a robust algorithm to find the shortest detour around an exclusion zone, and experimenting with low-confidence occupancy grids.
-      Mohanty \cite{Mohanty} worked on Capture and Tagging of images to suit proprietary offline 3D reconstruction algorithms, and the generation of paths with which to scan objects and fields.
-
-      The Computer vision driven chase-cam behaviour described here is based on the optimised Computer Vision routines under active development by Tan \cite{Tan}.
-
-      All Motion Control routines in the code base were designed keeping in mind that they must eventually be integrated with the collision avoidance and geo-fencing routines developed by Allen \cite{Allen}.  This included the mapping paths used by Mohanty \cite{Mohanty}.
 
 \section{Object tracker}
   \subsection{Introduction}
