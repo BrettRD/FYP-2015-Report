@@ -154,7 +154,7 @@
     
     All Motion Control routines in the code base were designed keeping in mind that they must eventually be integrated with the collision avoidance and geo-fencing routines developed by Allen \cite{Allen}. This included the mapping paths used by Mohanty \cite{Mohanty}.
 
-    The \gls{uav} inherited from the 2014 project team was tested and determined to be inadequate as a test-bed for the 2015 project. We therefore re-designed and re-built the \gls{uav}, thereby greatly improving its overall capabilities and making it fit-for-purpose. The re-build involved replacement of both the flight controller and the server, and optimised the sensor package. 
+    The \gls{uav} inherited from the 2014 project team was tested and determined to be inadequate as a test-bed for the 2015 project. We re-designed and re-built the \gls{uav}, thereby greatly improving its overall capabilities and making it fit-for-purpose. The re-build involved replacement of both the flight controller and the server, and optimised the sensor package. 
 
     We brought the code-base up to a level where it is feasible to implement rudimentary \gls{slam} processes.  We also demonstrated that low-power single board computers can perform live computer vision processes and elements of \gls{slam} processes with uncertainty based reasoning to track and follow moving objects. Our Computer-Vision-Only routines are by no means as robust as radio links and differential \gls{gps}, but the use of Computer Vision allows aesthetic framing of more than a wrist-worn \gls{gps} beacon. Our object tracker was demonstrated with a variety of navigation loops, some of which were not \gls{gps} dependent.
 
@@ -176,13 +176,13 @@
       Ground based vehicles have an advantage in that a 1D sensor need only be swept in one axis to search for obstacles, whereas a \gls{uav} must collect data filling a volume ahead of it. About the only form of sensor capable of doing this is a 3D laser scanner which is an high-precision, high-cost, high-mass device.
       A simple camera collects data on at least two axes at high enough speeds to navigate a multirotor, but the data is often difficult or computationally expensive to interpret.
 
-      With environmental data collected by an efficient computer-vision routine, the current generation of multi-rotor devices would be able to interact with an human environment.
+      With environmental data collected by an efficient computer-vision routine, the current generation of multirotor devices would be able to interact with an human environment.
 
       Computer vision assisted control routines would permit common low cost \glspl{uav} to better frame extreme sport chase-cam film reels, automatically avoid obstacles, and stabilise \gls{gps} variances in remotely operated inspection tasks.
 
       In this study we investigate the usability of computer vision alone to track and follow a moving target.  It is hoped that this work can be used to improve the performance of camera tracking routines in autonomous chase-cam and cinematographic applications, and partially automate remote inspection applications.
 
-      Much of the technology related to multi-copters is applicable to most other forms of \gls{uav}.  The vast array of tasks micro \glspl{uav} have already been applied to suggests our work may find use in: Agriculture; mapping; targeted crop dusting; cinematography; extreme-sport photography; Data collection; remote observation and inspection; and hazard and environmental monitoring.
+      Much of the technology related to multi-copters is applicable to most other forms of \gls{uav}.  The vast array of tasks micro \glspl{uav} have already been applied to suggests our work may find use in: Agriculture; mapping; targeted crop dusting; cinematography; extreme-sport photography; data collection; remote observation and inspection; and hazard and environmental monitoring.
         %Check the grammar here
     \subsection{Related Work}
       \subsubsection{Optical Search}
@@ -201,7 +201,7 @@
       \subsubsection{Altitude Estimation and Odometry by Optical Flow}
         Elementary methods are still interesting for the sake of biomimicry.  A twenty-element photo-array was demonstrated to provide sufficient resolution to control the altitude of an aircraft \cite{optoAlt}, coupling the altitude to the velocity.
         Dedicated, low-resolution optical flow sensors have become exceedingly cheap since the market-saturation of the optical mouse; and many commodity flight computers already include doppler information from \gls{gps} modules. 
-        Combining these elements allows a \gls{uav} to estimate the distance to the terrain \cite{RemTerrain}.  These commodity sensors typically do not include circuitry for computing rotation, but given the cost of the sensors, that limitation can be overcome combining two sensors \cite{FlowRot}.
+        Combining these elements allows a \gls{uav} to estimate the distance to the terrain \cite{RemTerrain}.  These commodity sensors typically do not include circuitry for computing rotation, but given the cost of the sensors, that limitation can be overcome by combining two sensors \cite{FlowRot}.
         A number of \gls{uav} systems such as ArduPilot already include support for these devices in their code-base \cite{ArduFlow}.
         This support also covers pitch and roll compensation and position stabilisation \cite{ArduFlow} \cite{OptoFlowStab}.
 
@@ -210,8 +210,8 @@
     \subsection{Project History}
 
       \subsubsection{2013}
-        The 2013 team of O'Connor \cite{OConnor} and Venables \cite{Venables} established the \gls{uav} research programme with the purchase of a DJI ``Flamewheel'' F550 Hexacopter with a NAZA-lite flight controller.  This copter was fitted and tested, and finally converted to an autonomous platform with the addition of a Raspberry Pi model B+ single-board computer and a circuit to switch the control channels from the radio receiver to the Raspberry Pi \gls{gpio} outputs.
-        The NAZA-lite at this time did not feature telemetry outputs or waypoint inputs, but it was able to loiter in a stiff wind using a \gls{gps} fix.
+        The 2013 team of O'Connor \cite{OConnor} and Venables \cite{Venables} established the \gls{uav} research programme with the purchase of a DJI ``Flamewheel'' F550 Hexacopter with a NAZA lite flight controller.  This copter was fitted and tested, and finally converted to an autonomous platform with the addition of a Raspberry Pi model B+ single-board computer and a circuit to switch the control channels from the radio receiver to the Raspberry Pi \gls{gpio} outputs.
+        The NAZA lite at this time did not feature telemetry outputs or waypoint inputs, but it was able to loiter in a stiff wind using a \gls{gps} fix.
         This team gathered location information for the Raspberry Pi using a QStar-Z \gls{gps} unit, and bearing information using an X-Sens \gls{imu}.  The weight of the sensor duplication did not exceed the maximum payload capacity of the platform, but it did compromise flight-time.
         Under direct control from the Raspberry Pi, the drone was able to execute basic waypoint navigation.
       \subsubsection{2014}
@@ -262,7 +262,7 @@
       At the time of writing, the Raspberry Pi V2 has less computational power than a smart-phone in the AU\$200 price bracket.
 
     \subsubsection{New Flight Controller}
-      We swapped the NAZA flight controller for a 3DR Pixhawk running the Ardupilot 3.2 firmware.  This gave us a feature-rich platform with a clear upgrade path to newer versions of Ardupilot, the option to use alternative firmwares like PX4 and Paparazzi, and the option for future students to recompile the firmware with new high-performance features.
+      We swapped the NAZA flight controller for a 3DR Pixhawk \cite{3dr-pixhawk} running the Ardupilot 3.2 firmware.  This gave us a feature-rich platform with a clear upgrade path to newer versions of Ardupilot, the option to use alternative firmwares like PX4 and Paparazzi, and the option for future students to recompile the firmware with new high-performance features.
 
     \subsubsection{Telemetry}
       The telemetry link supports the MAVlink \cite{MAVLink} protocol, which defines various commands from interrogating the status to setting waypoints, or even setting the instantaneous velocity vector.
@@ -270,14 +270,14 @@
 
     \subsubsection{Sensor Duplication}
       %XXX(image: \gls{gps} track, glitch from Uni Club to Eng Carpark)
-      We broke into the data channel between the NAZA flight controller and its \gls{gps} module in order to remove the redundant QStar-Z \gls{gps} module and acquire some telemetry data from the NAZA.
+      In our initial efforts, we broke into the data channel between the NAZA flight controller and its \gls{gps} module in order to remove the redundant QStar-Z \gls{gps} module and acquire some telemetry data from the NAZA.
 
       The data channel for the \gls{gps} had been deliberately obfuscated by DJI, making it quite clear that this was beyond the design intent of the flight controller.
       
       A community \gls{rc} group had reverse-engineered this link, and we ported their code to the Raspberry Pi, successfully decoded the data stream and integrated the NAZA \gls{gps} and compass data into our control loops.
       Unfortunately, the raw \gls{gps} and compass data was not particularly useful without the accelerometer and gyro data generated on the flight controller unit itself.
 
-      After changing to the Pixhawk, the coordinates, body angles, velocity, and battery state were all available over the MAVlink \cite{MAVLink} telemetry interface.
+      After changing to the Pixhawk \cite{3dr-pixhawk}, the coordinates, body angles, velocity, and battery state were all available over the MAVlink \cite{MAVLink} telemetry interface.
       The new configuration allowed us to fully eliminate duplicated hardware, an opportunity to re-build the wiring harness, significantly reduce the weight of the craft and extend the flight time to almost twenty minutes on the original batteries and motors.
 
       Near the end of the project, we fitted a second \gls{gps} module to the flight controller to combat the poor multipath environment of the \gls{uwa} campus.  With the sensor fusion and \gls{ekf} in the Ardupilot firmware, we were able to fly on \gls{gps} alone in some of the worst urban canyons on the campus.
@@ -290,7 +290,7 @@
     \subsubsection{Control Handover}
       Initially, control was handed from pilot to server using relays on the \gls{rc} inputs of the flight controller.  The ongoing development of control loops meant that the \gls{rc} switch had never been configured to surrender the throttle channel, and the server was left without altitude control;  this meant that the server had continuous perturbations from the user who remained responsible for maintaining a fixed altitude by sight alone.
 
-      Using the Pixhawk in guided mode, the flight computer is responsible for maintaining and changing altitude based on requests from the server over the primary telemetry channel.
+      Using the Pixhawk \cite{3dr-pixhawk} in guided mode, the flight controller is responsible for maintaining and changing altitude based on requests from the server over the primary telemetry channel.
       
       The flight controller is toggled between guided and manual modes by a switch on the pilot's transmitter.  If the \gls{uav} ever flies out of range of the transmitter, the flight controller drops into the \gls{rtl} fail-safe mode.  At the request of our supervisors, this was demonstrated almost every week.
 
@@ -310,7 +310,7 @@
 
     \subsubsection{Wiring Harness}
       The \gls{rc} switch was a source of considerable confusion, and wiring faults had caused power supply contention issues leading to regular server failures.
-      After installing the Pixhawk, the wiring harness was completely reworked, and every major component was placed on separate regulators.
+      After installing the Pixhawk \cite{3dr-pixhawk}, the wiring harness was completely reworked, and every major component was placed on separate regulators.
 
       Attention was paid to the mass of the wiring harness; almost 200g of cables and adaptors came out of the copter during the upgrade.
 
@@ -332,7 +332,7 @@
     \subsubsection{Position Estimation}
       %XXX existing or new \gls{pid} system, make it clear that that changed
       After experimenting briefly with the existing \gls{pid} loop process, we moved on to basic triangulation methods to estimate the location of an object with the assumption that it was on the ground.  We estimated the height based on the \gls{gps} altitude data streaming from the NAZA \gls{gps} module, but without access to the NAZA's internal barometer, the uncertainty in height caused the navigation loop stability to vary significantly minute by minute.
-      After upgrading to the Pixhawk, we had access to the data from the \gls{ekf} sensor fusion in the flight controller which included barometric data.  We also made significant changes to the way the flight controller was guided by the server, and this prompted a near total re-write of the object-tracking code-base.
+      After upgrading to the Pixhawk \cite{3dr-pixhawk}, we had access to the data from the \gls{ekf} sensor fusion in the flight controller which included barometric data.  We also made significant changes to the way the flight controller was guided by the server, and this prompted a near total re-write of the object-tracking code-base.
 
     \subsubsection{Desired Relative Pose}
       Once the object is located in 3D space, the copter will calculate a vantage point from which to view it.
@@ -343,21 +343,20 @@
 
     \subsubsection{Motion Control}
       As of version 3.3, the Arducopter code-base has support for arbitrary velocity vectors.  The first iteration of the motion control algorithm mirrored the old \gls{rc} emulation code base and transmitted a velocity vector in body coordinates to the flight controller and closed the motion loop through the automation server.  The long feedback loops had problems with delays and required detailed tuning.
-      The Pixhawk already has advanced automatic tuning routines and performs very well as a stand-alone autonomous platform.
-      To further reduce feature duplication, we replaced the motion control code with a guided-mode waypoint.  The automation server then simply computes and transmits the desired vantage points and yaw values to the Pixhawk.
+      The Pixhawk \cite{3dr-pixhawk} already has advanced automatic tuning routines and performs very well as a stand-alone autonomous platform.
+      To further reduce feature duplication, we replaced the motion control code with a guided-mode waypoint.  The automation server then simply computes and transmits the desired vantage points and yaw values to the Pixhawk \cite{3dr-pixhawk}.
 
       The coming Arducopter 3.4 release is set to include more advanced control schemes and support for GPS-independent autonomous features.  All of the motion control processes were kept in the code-base for comparisons and future work, particularly to facilitate a fully GPS-independent acceleration vector control scheme.
 
-      The command structure on the Pixhawk supports dead-channel detection and can execute failsafe behaviours on loss of link.  Even if our motion control system were to use an Acceleration vector output, a loss of link or server crash would engage the appropriate fail-safe, and the copter would continue flying.
+      The command structure on the Pixhawk \cite{3dr-pixhawk} supports dead-channel detection and can execute failsafe behaviours on loss of link.  Even if our motion control system were to use an Acceleration vector output, a loss of link or server crash would engage the appropriate fail-safe, and the copter would continue flying.
 
     \subsubsection{Structure from Image}
-      Resolving structure from image is a field unto itself.  In general, the computational load of modelling the environment in three dimensions live is beyond the capabilities of supercomputing clusters that would fit in the mass restrictions of most multi-rotors.  However, \gls{slam} systems optimise components of this field into a vast array of algorithms of varying computational power requirements.
+      Resolving structure from image is a field unto itself.  In general, the computational load of modelling the environment in three dimensions live is beyond the capabilities of supercomputing clusters that would fit in the mass restrictions of most multirotors.  However, \gls{slam} systems optimise components of this field into a vast array of algorithms of varying computational power requirements.
       One of the critical features of modern \gls{slam} systems is an acknowledgement that every measurement comes with some uncertainty. 
       The treatment of uncertainty can be very simple: carrying a one-dimensional confidence value; through to very complex, where every aspect of the measurement is recorded for post-processing and non-linear couplings can be accounted for.
 
-      Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods by using a less-than-live graph traversal process.
+      Some systems are beginning to feature graph-traversal techniques where observations are stored as relative links in a graph, and networks are drawn through those links to optimise against the uncertainty of various aspects of the environment.  These techniques allow the landmarks to be unloaded from memory very easily permitting a small live map, and can approach the detail of full-map covariance methods by using a less-than-live graph traversal process \cite{SLAMgraph}.
 
-      %XXX get a reference
     \subsubsection{Observations and Uncertainties}
     \label{sec:ObsAndUnc}
     %Make it clear how much of this approach you developed yourself.
@@ -370,16 +369,18 @@
         Most of these suffered from the objects' uncertainties falling so low that the probability of intersection between observation and model fell below reasonable thresholds and new object models were generated.  Part of the problem being that our object detection is still based on colour thresholding; this generates objects of significant size.  Sized objects violate the assumption implicit in the normal distributions where the probability of locating an `object' at a zero sized point, is zero.
 
         In order to facilitate rapid testing and expose weaknesses, the algorithm with which we have field tested deletes and regenerates the objects every cycle unless the object leaves the field of view.  This makes it very clear when the object estimation code is behaving erratically.
-%XXX 
+
       \subsubsubsection{Uncertainty Analysis}
         \label{sec:UncertaintyAnalysis}
 
         A good uncertainty model encodes everything that is known and nothing of what is unknown.  Good treatment of uncertainties combines knowledge without losing information, or adding assumptions.
         In the case of structure from image, a system that extracts maximal information from a single camera should be automatically capable of full stereoscopy using only the uncertainty analyses that applied to the monocular case.
-      
+
+        With this in mind, we developed a framework to manipulate vectors with uncertain geometry.
+        Our proof-of-concept and clean implementation in written in Octave is included in Appendix \ref{sec:code}
 
       \subsubsubsection{Ellipsoidal Models with Covariance Matrices}
-        For the sake of computational load, we have assumed the collected data has a three dimensional multivariate Normal distribution.  We have used this distribution in the quadratic form which uses the inverse of the covariance matrix.
+        For the sake of computational load, we have assumed that the collected data has a three dimensional multivariate normal distribution.  We have used this distribution in the quadratic form which uses the inverse of the covariance matrix.
         \begin{equation}
         PDF = \frac{1}{\sqrt {(2\pi)^k|\Sigma|}} e^{-\frac{1}{2}\left( \left(x-\mu\right)^T \Sigma^{-1} \left(x-\mu\right) \right)}
         \end{equation}
@@ -391,16 +392,17 @@
           \sigma_{zx} & \sigma_{zy} & \sigma_z^2 
         \end{bmatrix}, k=3
         \end{equation}
-        %XXX get the justification for the product straight
+
         This form is particularly useful because the normal distribution behaves as a \gls{pdf} of prediction, and the combination of two observations is the normalised product of probability density functions.  The product of two elliptical normal distributions is also an elliptical normal distribution.  
-%XXX check all the tenses
+
         In order to save on computing resources, we use the inverse of the covariance matrix natively \(C\), and ignore the normalisation constant, which has a closed-form solution and can be calculated from the inverse covariance matrix directly as follows:
         \begin{equation}
         \frac{\sqrt{|C|}}{\sqrt{(2\pi)^3}}
         \end{equation}
-        This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, follows almost exactly the definition of an ellipsoid and permits highly efficient geometric manipulation:
+        This allows a slightly faster rasterisation of the probability density than covariance matrices, but more importantly, follows almost exactly the definition of an ellipsoid \ref{eq:ellipse} and permits highly efficient geometric manipulation:
         \begin{equation}
         1 = \left(x-x_0\right)^T A \left(x-x_0\right)
+        \label{eq:ellipse}
         \end{equation}
 
         With no normalisation constant, the distribution always has a value of exactly one at the centroid.
@@ -413,7 +415,7 @@
         Multiple observations of a single point are generally combined with a weighted average, but assigning weights to superior measurements is often difficult as is a common point of discussion in Kalman Filter design.
         
         If the subject of the measurements is known to be the same object, the object is likely to be at the centroid of the product of the probability density functions.  This takes measurement accuracy into account.
-        Using the form above, the product of density functions becomes the sum of polynomials.
+        Using the forms described above, the product of density functions becomes the sum of polynomials.
         \begin{figure}
         \centering
         \begin{subfigure}{.33\textwidth}
@@ -533,9 +535,9 @@
         With a system that allows seamless representations of ellipsoids with singular matrices, it is not much of a stretch to consider ellipsoids represented by matrices with a negative determinant; the uncertainty ellipsoid becomes hyperbolic, expanding to an asymptote with an elliptical conic cross-section.  This is interesting because it represents an angular uncertainty with minimal changes to the uncertainty model.
         A simple hyperbolic form aligned along an axis will have one negative diagonal term, and zeros for all off-diagonal terms.
         It is worth reiterating here that positive numbers represent increasing certainty and zero represents total uncertainty; intersecting an hyperbolic distribution with an elliptical one would suggest that the result contains less information than the elliptical distribution alone.
-        This stems from an hyperbolic \gls{pdf} requiring a normalisation function over its area; In the simple matrix form, the density increases with the square of the distance from the centre.  The location and size of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
+        This stems from an hyperbolic \gls{pdf} requiring a normalisation function over its area.  The location and size of the resulting ellipsoid is strongly affected by the density gradient of the axis of the hyperbolic distribution.
 
-        Given that a hyperbolic volume integrates to infinity, this hyperbolic probability density function would be infinitesimal everywhere.  A more useful construction for its behaviour would set the density along its major axis to one (Figure \ref{fig:hyperbolicsub2}), or alternatively, set the integral of the cross-section to one (Figure \ref{fig:hyperbolicsub3}).
+        Given that hyperbolic volumes integrate to infinity, this hyperbolic probability density function would be infinitesimal everywhere.  A more useful construction for its behaviour would set the density along its major axis to one (Figure \ref{fig:hyperbolicsub2}), or alternatively, set the integral of the cross-section to one (Figure \ref{fig:hyperbolicsub3}).
         The latter model is similar to the definition of a Gaussian laser beam profile; the total energy in the beam is proportional to its length and is therefore unbounded, but the power density is fixed for any cross section through the beam.
         \begin{figure}
         \centering
@@ -618,7 +620,7 @@
 
       \subsubsubsection{Bench Marks}
         As mentioned earlier, the Arducopter firmwares offer a \gls{gps} driven `follow me' mode using the Android application ``Tower'' \cite{3dr-tower}.
-        The \gls{gps} tether mode was very stable and eminently usable in real circumstances.  It suffered from worse update bandwidth issues than our autonomous modes, and frequently allowed the beacon to leave the frame.  We can presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
+        The \gls{gps} tether mode was very stable and eminently usable in real circumstances.  The update bandwidth was lower than our autonomous modes, and it frequently allowed the beacon to leave the frame, but it never lost lock or moved beyond the \gls{gps} tether radius.  We can presume that the commodity chase-cams soon to be released will optimise for bandwidth and pay more attention to camera direction.
 
         The \gls{gps} chase system did have some serious flaws though.  In the very poor \gls{gps} environment of the Great Court on the \gls{uwa} campus, the Ublox Neo7m radio was deviating more than 500m every couple of seconds.  With no operator assistance, the loss of \gls{gps} led to a catastrophic failure of the algorithm and a very difficult operator intervention.  Fortunately, the Ardupilot firmware permits multiple \gls{gps} modules in redundant fashion, so we were able to combat the urban canyon environment with radio diversity.
 
@@ -730,7 +732,34 @@ This work brings us one step further to allowing \glspl{uav} to interact with an
 \begin{appendices}
 
 %Octave Code
+\section{Implementation of Uncertain Geometry}
+  \label{sec:code}
+  \lstset{language=Octave,
+    frame=single,
+    rulesepcolor=\color{blue}
+   }
+  For completeness, included here is a functioning copy of the core elements of the uncertain geometry processes used in our work.  This proof-of-concept code was implemented first in Octave, then ported to C++ for the live tests.  This is the original Octave code.
 
+  Generation of primitives:
+  \lstinputlisting{../Gauss/GenerateBlob.m}
+  \lstinputlisting{../Gauss/GenerateRay.m}
+
+  Destructive Covariance Intersection:
+  \lstinputlisting{../Gauss/IntersectBlob.m}
+
+  Transformations of primitives:
+  \lstinputlisting{../Gauss/RotateBlob.m}
+  \lstinputlisting{../Gauss/StretchBlob.m}
+  \lstinputlisting{../Gauss/SumBlob.m}
+  \lstinputlisting{../Gauss/TranslateBlob.m}
+  
+  Sampling and rasterising functions:
+  \lstinputlisting{../Gauss/GaussianBlob.m}
+  \lstinputlisting{../Gauss/SampleBlob.m}
+
+  The square of the Mahalanobis distance of a point from the centroid of a primitive:
+  \lstinputlisting{../Gauss/MahalSq.m}
+  
 
 
   %\addcontentsline{toc}{section}{Appendices}

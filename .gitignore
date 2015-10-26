@@ -6,6 +6,9 @@
 *.bbl
 *.blg
 *.toc
+*.glg
+*.glo
+*.gls
 *.atfi
 page*.pdf
 page*.svg
@@ -20,5 +23,5 @@ ratings.db
 pythonpacks/
 Dross
 scratchpad
-transmittal.tex
+secrets.tex
 Report.pdf
